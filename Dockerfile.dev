@@ -1,0 +1,25 @@
+FROM erlang:27.3.0.0
+
+## this is required for erlexec
+ENV SHELL=/bin/bash
+
+## Else Elixir will complain
+ENV LANG=C.UTF-8
+ENV ELIXIR_ERL_OPTIONS="+fnu"
+
+RUN apt-get update && apt-get -y install \
+    emacs \
+    bash-completion \
+    git \
+    inotify-tools \
+    cmake \
+    mosquitto
+
+# create a user for docker image since erlexec complains too much
+# but give the user super-powers - erlang and the power of root
+RUN useradd -s /bin/bash -m -G users -G sudo erlang
+RUN passwd --delete erlang
+USER erlang
+
+# promt> make c-tab-tab-ompile
+RUN echo ". /etc/bash_completion" >> /home/erlang/.bashrc
