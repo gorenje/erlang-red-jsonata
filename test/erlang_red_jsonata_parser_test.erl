@@ -288,6 +288,13 @@ foreach_parser_test_() ->
          end."
       },
       {
+        capital_letter_key_names_to_atoms,
+        "{ 'Location' : 'value', \"Location\": \"VLAUE\" }",
+        "fun (Msg) ->
+           #{ 'Location' => \"value\", 'Location' => \"VLAUE\" }
+        end."
+      },
+      {
         array_with_content,
         "[1, 2, \"asdasd\", $$.payload]",
         "fun (Msg) ->

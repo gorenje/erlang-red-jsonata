@@ -1,6 +1,6 @@
 {application, erlang_red_jsonata, [
     {description,
-     "An implementation in Erlang of the JSONata transformation language."},
+        "An implementation in Erlang of the JSONata transformation language."},
     {vsn, "0.1.0"},
     {registered, []},
     {applications, [

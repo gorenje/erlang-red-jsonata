@@ -153,6 +153,14 @@ map_test() ->
         )
     ),
 
+    ?assertEqual(
+        {ok, #{'Location' => 4, 'CapitalKey' => "value two" }},
+        erlang_red_jsonata:execute(
+            "{ \"Location\": $$.payload, 'CapitalKey': $$.key2 }",
+            #{ payload => 4, key2 => "value two" }
+        )
+    ),
+
     Msg = #{
         payload => #{
             key => 4,

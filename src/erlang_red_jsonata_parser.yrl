@@ -484,24 +484,28 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
     end.
 
 %%
-%%
+%% list_to_atom returns quotes, i.e.
+%%      list_to_atom("Uppercase") ==> 'Uppercase'
+%% the format maintains that quote but ignores them if not necessary:
+%%      list_to_atom("lowercase") ==> lowercase
+%% So the quotes are maintained by the io_lib:format/2
 name_to_atom({name, _LineNo, V}) ->
-    list_to_atom(V).
+    io_lib:format("~p", [list_to_atom(V)]).
 %%
 %%
 replace_single_quotes({sqstring, LineNo, Value}) ->
     {string, LineNo, lists:flatten(string:replace(Value, "'", "\"", all))}.
 %%
 %%
-remove_quotes({string,_LineNo,[$"|Str]}) ->
+remove_quotes({string, _LineNo, [$"|Str] = Org}) ->
     case lists:reverse(Str) of
         [$"|StrD] ->
-            list_to_atom(lists:reverse(StrD))
+            io_lib:format("~p", [list_to_atom(lists:reverse(StrD))])
     end;
-remove_quotes({sqstring,_LineNo,[$'|Str]}) ->
+remove_quotes({sqstring, _LineNo, [$'|Str] = Org}) ->
     case lists:reverse(Str) of
         [$'|StrD] ->
-            list_to_atom(lists:reverse(StrD))
+            io_lib:format("~p", [list_to_atom(lists:reverse(StrD))])
     end.
 %%
 %%
