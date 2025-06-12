@@ -32,6 +32,9 @@ app-start-loop:
 eunit-test:
 	rebar3 eunit
 
+eunit-test-loop:
+	while [ 1 ] ; do make -s eunit-test ; sleep 2 ; reset ; done
+
 # This helps understanding dialyzser
 #  --> https://grantwinney.com/common-dialyzer-errors-and-solutions-in-erlang/
 #  --> https://erlangforums.com/t/unknown-type-ranch-ref-0-dialyzer-warning-in-cowboy-req-on-erlang-otp-26/2760 - discussion "unknown functions"
