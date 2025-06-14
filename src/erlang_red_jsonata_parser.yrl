@@ -497,12 +497,12 @@ replace_single_quotes({sqstring, LineNo, Value}) ->
     {string, LineNo, lists:flatten(string:replace(Value, "'", "\"", all))}.
 %%
 %%
-remove_quotes({string, _LineNo, [$"|Str] = Org}) ->
+remove_quotes({string, _LineNo, [$"|Str]}) ->
     case lists:reverse(Str) of
         [$"|StrD] ->
             io_lib:format("~p", [list_to_atom(lists:reverse(StrD))])
     end;
-remove_quotes({sqstring, _LineNo, [$'|Str] = Org}) ->
+remove_quotes({sqstring, _LineNo, [$'|Str]}) ->
     case lists:reverse(Str) of
         [$'|StrD] ->
             io_lib:format("~p", [list_to_atom(lists:reverse(StrD))])
