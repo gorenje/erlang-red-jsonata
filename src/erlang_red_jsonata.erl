@@ -135,7 +135,6 @@ evaluate_erlang(Expression) ->
 %%
 %%
 jsonata_to_erlang(JSONataString) ->
-    {ok, Tokens, _} = erlang_red_jsonata_leex:string(JSONataString),
     case erlang_red_jsonata_leex:string(JSONataString) of
         {ok, Tokens, _} ->
             case erlang_red_jsonata_parser:parse(Tokens) of
