@@ -7,14 +7,14 @@ count_test() ->
         {ok, 4},
         erlang_red_jsonata:execute(
             "$count($$.payload)",
-            #{payload => [1, 2, 3, 4]}
+            #{<<"payload">> => [1, 2, 3, 4]}
         )
     ),
     ?assertEqual(
         {ok, 4},
         erlang_red_jsonata:execute(
             "$count(msg.payload)",
-            #{payload => [1, 2, 3, 4]}
+            #{<<"payload">> => [1, 2, 3, 4]}
         )
     ).
 
@@ -25,7 +25,7 @@ parse_error_test() ->
                 {1, erlang_red_jsonata_parser, ["syntax error before: ", []]}}},
         erlang_red_jsonata:execute(
             "$count($$.payload) /* comment",
-            #{payload => [1, 2, 3, 4]}
+            #{<<"payload">> => [1, 2, 3, 4]}
         )
     ).
 
@@ -34,7 +34,7 @@ replace_test() ->
         {ok, "ggkkggkkgg"},
         erlang_red_jsonata:execute(
             "$replace($$.payload,\"rr\",\"gg\")",
-            #{payload => "rrkkrrkkrr"}
+            #{<<"payload">> => "rrkkrrkkrr"}
         )
     ),
 
@@ -44,7 +44,7 @@ replace_test() ->
         {ok, "ggkkggkkgg"},
         erlang_red_jsonata:execute(
             "$replace(msg.payload,\"rr\",\"gg\")",
-            #{payload => "rrkkrrkkrr"}
+            #{<<"payload">> => "rrkkrrkkrr"}
         )
     ).
 
@@ -55,8 +55,8 @@ multistatement_test() ->
        erlang_red_jsonata:execute(
          "$$.payload ; \"string\" ; 123 ; 321.123 ; $$._underscore",
          #{
-           payload => "rrkkrrkkrr",
-           '_underscore' => '_underscore'
+           <<"payload">> => "rrkkrrkkrr",
+           <<"_underscore">> => '_underscore'
           }
         )
     ).
@@ -66,34 +66,34 @@ single_expr_test() ->
         {ok, 4},
         erlang_red_jsonata:execute(
             "$$.payload",
-            #{payload => 4}
+            #{<<"payload">> => 4}
         )
     ),
     ?assertEqual(
         {ok, "string"},
         erlang_red_jsonata:execute(
             "\"string\"",
-            #{payload => 4}
+            #{<<"payload">> => 4}
         )
     ),
     ?assertEqual(
         {ok, 123},
         erlang_red_jsonata:execute(
             "123",
-            #{payload => 4}
+            #{<<"payload">> => 4}
         )
     ),
     ?assertEqual(
         {ok, 123.1},
         erlang_red_jsonata:execute(
             "123.1",
-            #{payload => 4}
+            #{<<"payload">> => 4}
         )
     ).
 
 string_concat_test() ->
     Msg = #{
-        payload => "world"
+        <<"payload">> => "world"
     },
     ?assertEqual(
         {ok, "hello world"},
@@ -106,7 +106,7 @@ string_concat_test() ->
 %% erlfmt:ignore strings are mismanaged by erlfmt
 map_test() ->
     ?assertEqual(
-        {ok, #{key => "hello world"}},
+        {ok, #{<<"key">> => "hello world"}},
         erlang_red_jsonata:execute(
             "{ \"key\": \"hello world\" }",
             #{}
@@ -114,7 +114,7 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{key => value}},
+        {ok, #{<<"key">> => value}},
         erlang_red_jsonata:execute(
             "{ key: value }",
             #{}
@@ -122,7 +122,7 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{key => "hello world"}},
+        {ok, #{<<"key">> => "hello world"}},
         erlang_red_jsonata:execute(
             "{ 'key': 'hello world' }",
             #{}
@@ -130,15 +130,15 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{key => 4}},
+        {ok, #{<<"key">> => 4}},
         erlang_red_jsonata:execute(
             "{ \"key\": $$.payload }",
-            #{payload => 4}
+            #{<<"payload">> => 4}
         )
     ),
 
     ?assertEqual(
-        {ok, #{integer => 4, float => 12.32}},
+        {ok, #{<<"integer">> => 4, <<"float">> => 12.32}},
         erlang_red_jsonata:execute(
             "{ 'integer': 4, 'float': 12.32 }",
             #{}
@@ -146,35 +146,35 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{key => 4, key2 => "value two"}},
+        {ok, #{<<"key">> => 4, <<"key2">> => "value two"}},
         erlang_red_jsonata:execute(
             "{ \"key\": $$.payload, 'key2': 'value two' }",
-            #{payload => 4}
+            #{<<"payload">> => 4}
         )
     ),
 
     ?assertEqual(
-        {ok, #{'Location' => 4, 'CapitalKey' => "value two" }},
+        {ok, #{<<"Location">> => 4, <<"CapitalKey">> => "value two" }},
         erlang_red_jsonata:execute(
             "{ \"Location\": $$.payload, 'CapitalKey': $$.key2 }",
-            #{ payload => 4, key2 => "value two" }
+            #{ <<"payload">> => 4, <<"key2">> => "value two" }
         )
     ),
 
     Msg = #{
-        payload => #{
-            key => 4,
-            key2 => #{
-                key3 => 3,
-                key4 => #{
-                    key5 => 5
+        <<"payload">> => #{
+            <<"key">> => 4,
+            <<"key2">> => #{
+                <<"key3">> => 3,
+                <<"key4">> => #{
+                    <<"key5">> => 5
                }
             }
         }
     },
 
     ?assertEqual(
-        {ok, #{key => 4, key2 => 3, key3 => 5}},
+        {ok, #{<<"key">> => 4, <<"key2">> => 3, <<"key3">> => 5}},
         erlang_red_jsonata:execute(
             "{ \"key\": $$.payload.key,
                \"key2\": $$.payload.key2.key3,
@@ -187,19 +187,19 @@ map_test() ->
 %% erlfmt:ignore strings are mismanaged by erlfmt
 map_with_string_concat_test() ->
     Msg = #{
-        payload => #{
-            key => "4",
-            key2 => #{
-                key3 => "3",
-                key4 => #{
-                    key5 => "5"
+        <<"payload">> => #{
+            <<"key">> => "4",
+            <<"key2">> => #{
+                <<"key3">> => "3",
+                <<"key4">> => #{
+                    <<"key5">> => "5"
                }
             }
         }
     },
 
     ?assertEqual(
-        {ok, #{ key => "4Hello 3 space 5" }},
+        {ok, #{ <<"key">> => "4Hello 3 space 5" }},
         erlang_red_jsonata:execute(
             "/* commenter there */ { \"key\": $$.payload.key & \"Hello \" &
                    $$.payload.key2.key3 & \" space \" &
@@ -211,19 +211,19 @@ map_with_string_concat_test() ->
 %% erlfmt:ignore strings are mismanaged by erlfmt
 map_with_string_binary_concat_test() ->
     Msg = #{
-        payload => #{
-            key => <<"4">>,
-            key2 => #{
-                key3 => <<"3">>,
-                key4 => #{
-                    key5 => <<"5">>
+        <<"payload">> => #{
+            <<"key">> => <<"4">>,
+            <<"key2">> => #{
+                <<"key3">> => <<"3">>,
+                <<"key4">> => #{
+                    <<"key5">> => <<"5">>
                }
             }
         }
     },
 
     ?assertEqual(
-        {ok, #{ key => "4Hello 3 space 5" }},
+        {ok, #{ <<"key">> => "4Hello 3 space 5" }},
         erlang_red_jsonata:execute(
             "/* commenter there */ { \"key\": $$.payload.key & \"Hello \" &
                    $$.payload.key2.key3 & \" space \" &
@@ -248,7 +248,7 @@ map_string_concat_with_int_test() ->
         erlang_red_jsonata:execute(
          "$$.payload & \"hello \" & \" world \" & \" 1234 \" & 10
                 & \" goodbye \" & \" cruel \" & world",
-            #{payload => <<"yet another test">>}
+            #{<<"payload">> => <<"yet another test">>}
         )
     ).
 
@@ -262,28 +262,28 @@ tostring_from_anything_test() ->
         {ok, <<"what">>},
         erlang_red_jsonata:execute(
             "$toString($$.payload)",
-            #{payload => <<"what">>}
+            #{<<"payload">> => <<"what">>}
         )
     ),
     ?assertEqual(
         {ok, <<"when">>},
         erlang_red_jsonata:execute(
             "$toString($$.payload)",
-            #{payload => "when"}
+            #{<<"payload">> => "when"}
         )
     ),
     ?assertEqual(
         {ok, <<"12131312">>},
         erlang_red_jsonata:execute(
             "$toString($$.payload)",
-            #{payload => 12131312}
+            #{<<"payload">> => 12131312}
         )
     ),
     ?assertEqual(
         {ok, <<"12131312.123">>},
         erlang_red_jsonata:execute(
             "$toString($$.payload)",
-            #{payload => 12131312.123}
+            #{<<"payload">> => 12131312.123}
         )
     ).
 
@@ -302,7 +302,7 @@ algorithimc_test() ->
         {ok, 40},
         erlang_red_jsonata:execute(
             "$count($$.payload) * 5",
-            #{payload => [one, two, three, four, five, six, 'and', seven]}
+            #{<<"payload">> => [one, two, three, four, five, six, 'and', seven]}
         )
     ),
     ?assertEqual(
@@ -310,8 +310,9 @@ algorithimc_test() ->
         erlang_red_jsonata:execute(
             "$count($$.payload) * 5 * $length($$.str)",
             #{
-                payload => [one, two, three, four, five, six, 'and', seven],
-                str => "onetwothree"
+                <<"payload">> => [one, two, three, four,
+                                  five, six, 'and', seven],
+                <<"str">> => "onetwothree"
             }
         )
     ),
@@ -320,7 +321,8 @@ algorithimc_test() ->
         erlang_red_jsonata:execute(
             "$$.payload.fuba.dad + 1.2 + 2.3 + $$.payload.name.name
                                                             + 3.243 + 4 * 6",
-            #{payload => #{fuba => #{dad => 4}, name => #{name => 4}}}
+            #{<<"payload">> => #{<<"fuba">> => #{<<"dad">> => 4},
+                                 <<"name">> => #{<<"name">> => 4}}}
         )
     ).
 
@@ -337,10 +339,10 @@ single_quote_string_test() ->
 name_as_funct_argument_test() ->
     ?assertEqual(
         {ok, #{
-            float => 1.23,
-            key => <<"single quote strings">>,
-            key2 => <<"value">>,
-            banaint => 4
+            <<"float">> => 1.23,
+            <<"key">> => <<"single quote strings">>,
+            <<"key2">> => <<"value">>,
+            <<"banaint">> => 4
         }},
         erlang_red_jsonata:execute(
             "{ \"key\": $toString('single quote strings'), banaint: 4,
@@ -369,7 +371,7 @@ arithmetic_expressions_with_functions_test() ->
 
 empty_funct_arguments_in_expr_test() ->
     ?assertEqual(
-        {ok, #{key => 0}},
+        {ok, #{<<"key">> => 0}},
         erlang_red_jsonata:execute(
             "{ key: $millis() - $millis() }",
             #{}
@@ -390,14 +392,26 @@ function_map_with_funct_test() ->
         {ok, [1, 2, 3]},
         erlang_red_jsonata:execute(
             "$map($$.payload, function ($v) { $v.col } )",
-            #{payload => [#{col => 1}, #{col => 2}, #{col => 3}]}
+            #{
+                <<"payload">> => [
+                    #{<<"col">> => 1},
+                    #{<<"col">> => 2},
+                    #{<<"col">> => 3}
+                ]
+            }
         )
     ),
     ?assertEqual(
         {ok, ["a", "b", "c"]},
         erlang_red_jsonata:execute(
             "$map($$.payload, function ($v) { $v.col } )",
-            #{payload => [#{col => "a"}, #{col => "b"}, #{col => "c"}]}
+            #{
+                <<"payload">> => [
+                    #{<<"col">> => "a"},
+                    #{<<"col">> => "b"},
+                    #{<<"col">> => "c"}
+                ]
+            }
         )
     ),
     ?assertEqual(
@@ -405,10 +419,10 @@ function_map_with_funct_test() ->
         erlang_red_jsonata:execute(
             "$map($$.payload, function ($v) { $v.col.value } )",
             #{
-                payload => [
-                    #{col => #{value => "a"}},
-                    #{col => #{value => 2}},
-                    #{col => #{value => "c"}}
+                <<"payload">> => [
+                    #{<<"col">> => #{<<"value">> => "a"}},
+                    #{<<"col">> => #{<<"value">> => 2}},
+                    #{<<"col">> => #{<<"value">> => "c"}}
                 ]
             }
         )
@@ -419,14 +433,14 @@ function_sum_with_arrays_test() ->
         {ok, 21},
         erlang_red_jsonata:execute(
             "$sum($$.payload)",
-            #{payload => [1, 2, 3, 4, 5, 6]}
+            #{<<"payload">> => [1, 2, 3, 4, 5, 6]}
         )
     ),
     ?assertEqual(
         {ok, 22.1},
         erlang_red_jsonata:execute(
             "$sum($$.payload)",
-            #{payload => [1, 2, 3.4, 4.2, 5.1, 6.4]}
+            #{<<"payload">> => [1, 2, 3.4, 4.2, 5.1, 6.4]}
         )
     ).
 
@@ -436,10 +450,10 @@ function_sum_with_arrays_of_objects_test() ->
         erlang_red_jsonata:execute(
             "$sum($map($$.payload, function ($v) { $v.col.value } ))",
             #{
-                payload => [
-                    #{col => #{value => 2}},
-                    #{col => #{value => 2}},
-                    #{col => #{value => 3}}
+                <<"payload">> => [
+                    #{<<"col">> => #{<<"value">> => 2}},
+                    #{<<"col">> => #{<<"value">> => 2}},
+                    #{<<"col">> => #{<<"value">> => 3}}
                 ]
             }
         )
@@ -450,42 +464,66 @@ array_with_index_test() ->
         {ok, 1},
         erlang_red_jsonata:execute(
             "$$.payload.key.key[0]",
-            #{payload => #{key => #{key => [1, "hello world", 3]}}}
+            #{
+                <<"payload">> => #{
+                    <<"key">> => #{<<"key">> => [1, "hello world", 3]}
+                }
+            }
         )
     ),
     ?assertEqual(
         {ok, "hello world"},
         erlang_red_jsonata:execute(
             "$$.payload.key.key[1]",
-            #{payload => #{key => #{key => [1, "hello world", 3]}}}
+            #{
+                <<"payload">> => #{
+                    <<"key">> => #{<<"key">> => [1, "hello world", 3]}
+                }
+            }
         )
     ),
     ?assertEqual(
         {ok, 3},
         erlang_red_jsonata:execute(
             "$$.payload.key.key[2]",
-            #{payload => #{key => #{key => [1, "hello world", 3]}}}
+            #{
+                <<"payload">> => #{
+                    <<"key">> => #{<<"key">> => [1, "hello world", 3]}
+                }
+            }
         )
     ),
     ?assertEqual(
         {ok, 3},
         erlang_red_jsonata:execute(
             "$$.payload.key.key[-1]",
-            #{payload => #{key => #{key => [1, "hello world", 3]}}}
+            #{
+                <<"payload">> => #{
+                    <<"key">> => #{<<"key">> => [1, "hello world", 3]}
+                }
+            }
         )
     ),
     ?assertEqual(
         {ok, "hello world"},
         erlang_red_jsonata:execute(
             "$$.payload.key.key[-2]",
-            #{payload => #{key => #{key => [1, "hello world", 3]}}}
+            #{
+                <<"payload">> => #{
+                    <<"key">> => #{<<"key">> => [1, "hello world", 3]}
+                }
+            }
         )
     ),
     ?assertEqual(
         {ok, 1},
         erlang_red_jsonata:execute(
             "$$.payload.key.key[-3]",
-            #{payload => #{key => #{key => [1, "hello world", 3]}}}
+            #{
+                <<"payload">> => #{
+                    <<"key">> => #{<<"key">> => [1, "hello world", 3]}
+                }
+            }
         )
     ).
 
@@ -494,30 +532,52 @@ split_string_test() ->
         {ok, ["one", "two", "three", "four"]},
         erlang_red_jsonata:execute(
             "$split($$.payload,\",\")",
-            #{payload => "one,two,three,four"}
+            #{<<"payload">> => "one,two,three,four"}
         )
     ).
 
 keys_of_single_maps_test() ->
     ?assertEqual(
-        {ok, [<<"one">>, <<"two">>, <<"three">>]},
+        {ok, [<<"one">>, <<"three">>, <<"two">>]},
         erlang_red_jsonata:execute(
-            "$keys($$.payload)",
-            #{payload => #{one => "one", two => "two", three => "three"}}
+            "$sort($keys($$.payload))",
+            #{
+                <<"payload">> => #{
+                    <<"one">> => "one",
+                    <<"two">> => "two",
+                    <<"three">> => "three"
+                }
+            }
         )
     ).
 
 keys_of_list_of_maps_test() ->
     ?assertEqual(
-        {ok, [<<"four">>, <<"one">>, <<"three">>, <<"five">>, <<"two">>]},
+        {ok, [<<"five">>, <<"four">>, <<"one">>, <<"three">>, <<"two">>]},
         erlang_red_jsonata:execute(
-            "$keys($$.payload)",
+            "$sort($keys($$.payload))",
             #{
-                payload => [
-                    #{one => "one", two => "two", three => "three"},
-                    #{one => "one", two => "two", three => "three"},
-                    #{one => "one", two => "two", five => "five"},
-                    #{one => "one", two => "two", four => "four"}
+                <<"payload">> => [
+                    #{
+                        <<"one">> => "one",
+                        <<"two">> => "two",
+                        <<"three">> => "three"
+                    },
+                    #{
+                        <<"one">> => "one",
+                        <<"two">> => "two",
+                        <<"three">> => "three"
+                    },
+                    #{
+                        <<"one">> => "one",
+                        <<"two">> => "two",
+                        <<"five">> => "five"
+                    },
+                    #{
+                        <<"one">> => "one",
+                        <<"two">> => "two",
+                        <<"four">> => "four"
+                    }
                 ]
             }
         )

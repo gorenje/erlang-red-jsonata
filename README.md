@@ -24,10 +24,12 @@ becomes:
 
 ```erlang
 fun (Msg) ->
-    maps:get(dad, maps:get(fuba, maps:get(payload, Msg))) + 1 + 2 +
-         maps:get(name, maps:get(name, maps:get(payload, Msg))) + 3 + 4 * 6
+    maps:get(<<"dad">>, maps:get(<<"fuba">>, maps:get(<<"payload">>, Msg))) + 1 + 2 +
+         maps:get(<<"name">>, maps:get(<<""name">>, maps:get(<<"payload">>, Msg))) + 3 + 4 * 6
 end.
 ```
+
+**Breaking change**: Keys are no longer atoms, they have become binaries.
 
 JSONata Support
 ----

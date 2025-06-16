@@ -36,21 +36,14 @@ to_map_get_with_index(Ary, {int, _LineNo, V}) ->
     io_lib:format("lists:nth(~s, ~s)", [integer_to_list(V+1), to_map_get(Ary)]).
 
 to_map_get([{name, _LineNo, V}|T]) ->
-    to_map_get(T, io_lib:format("maps:get(~s, Msg)", [V])).
+    to_map_get(T, io_lib:format("maps:get(<<\"~s\">>, Msg)", [V])).
 to_map_get([], LastMap) ->
     LastMap;
 to_map_get([{name, _LineNo, V}|T], LastMap) ->
-    to_map_get(T, io_lib:format("maps:get(~s, ~s)", [V, LastMap])).
+    to_map_get(T, io_lib:format("maps:get(<<\"~s\">>, ~s)", [V, LastMap])).
 
-just_name({name, _LineNo, Name}) ->
-    case Name of
-        %% check for '_' at the beginning, quote name if so.
-        [$_|_Rest] ->
-            {name, 1, io_lib:format("'~s'", [Name])};
-        _ ->
-            {name, 1, Name}
-    end.
-
+just_name({name, _LineNo, _Name} = Whole) ->
+    Whole.
 
 convert_arith_expr({op, OpStr, Expr1, Expr2}) ->
     OpFun = fun (Expr) ->
@@ -236,6 +229,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         keys ->
             list_to_binary(io_lib:format("jsonata_keys(~s)",
                                          [args_to_string(Expr)]));
+        sort ->
+            list_to_binary(io_lib:format("lists:sort(~s)",
+                                         [args_to_string(Expr)]));
         map ->
             %% lists:reverse(...) here because the argumenst to $map(...)
             %% and lists:map(...) are exactly the opposite: (Fun, List) versus
@@ -291,24 +287,24 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
 %% the format maintains that quote but ignores them if not necessary:
 %%      list_to_atom("lowercase") ==> lowercase
 %% So the quotes are maintained by the io_lib:format/2
-name_to_atom({name, _LineNo, V}) ->
-    io_lib:format("~p", [list_to_atom(V)]).
-%%
-%%
-replace_single_quotes({sqstring, LineNo, Value}) ->
-    {string, LineNo, lists:flatten(string:replace(Value, "'", "\"", all))}.
+name_to_binary({name, _LineNo, V}) ->
+    io_lib:format("<<\"~s\">>", [V]).
 %%
 %%
 remove_quotes({string, _LineNo, [$"|Str]}) ->
     case lists:reverse(Str) of
         [$"|StrD] ->
-            io_lib:format("~p", [list_to_atom(lists:reverse(StrD))])
+            io_lib:format("<<\"~s\">>", [lists:reverse(StrD)])
     end;
 remove_quotes({sqstring, _LineNo, [$'|Str]}) ->
     case lists:reverse(Str) of
         [$'|StrD] ->
-            io_lib:format("~p", [list_to_atom(lists:reverse(StrD))])
+            io_lib:format("<<\"~s\">>", [lists:reverse(StrD)])
     end.
+%%
+%%
+replace_single_quotes({sqstring, LineNo, Value}) ->
+    {string, LineNo, lists:flatten(string:replace(Value, "'", "\"", all))}.
 %%
 %%
 wrap_with_func([]) ->
@@ -513,7 +509,7 @@ yecctoken2string1(Other) ->
 
 
 
--file("/code/src/erlang_red_jsonata_parser.erl", 516).
+-file("/code/src/erlang_red_jsonata_parser.erl", 512).
 
 -dialyzer({nowarn_function, yeccpars2/7}).
 -compile({nowarn_unused_function,  yeccpars2/7}).
@@ -2554,7 +2550,7 @@ yeccpars2_25_(__Stack0) ->
 yeccpars2_27_(__Stack0) ->
  [___1 | __Stack] = __Stack0,
  [begin
-                   name_to_atom(___1)
+                   name_to_binary(___1)
   end | __Stack].
 
 -compile({inline,yeccpars2_28_/1}).
@@ -3440,4 +3436,4 @@ yeccpars2_129_(__Stack0) ->
   end | __Stack].
 
 
--file("/code/src/erlang_red_jsonata_parser.yrl", 525).
+-file("/code/src/erlang_red_jsonata_parser.yrl", 521).

@@ -132,7 +132,7 @@ num_function_call -> funct '(' ')' : {funct, convert_funct('$1', {no_args})}.
 
 key_name -> string : remove_quotes('$1').
 key_name -> sqstring : remove_quotes('$1').
-key_name -> name : name_to_atom('$1').
+key_name -> name : name_to_binary('$1').
 
 key_value_pair -> key_name ':' expr : {'$1', '$3'}.
 key_value_pair -> key_name ':' arith_expr : {'$1', convert_arith_expr('$3')}.
@@ -234,21 +234,14 @@ to_map_get_with_index(Ary, {int, _LineNo, V}) ->
     io_lib:format("lists:nth(~s, ~s)", [integer_to_list(V+1), to_map_get(Ary)]).
 
 to_map_get([{name, _LineNo, V}|T]) ->
-    to_map_get(T, io_lib:format("maps:get(~s, Msg)", [V])).
+    to_map_get(T, io_lib:format("maps:get(<<\"~s\">>, Msg)", [V])).
 to_map_get([], LastMap) ->
     LastMap;
 to_map_get([{name, _LineNo, V}|T], LastMap) ->
-    to_map_get(T, io_lib:format("maps:get(~s, ~s)", [V, LastMap])).
+    to_map_get(T, io_lib:format("maps:get(<<\"~s\">>, ~s)", [V, LastMap])).
 
-just_name({name, _LineNo, Name}) ->
-    case Name of
-        %% check for '_' at the beginning, quote name if so.
-        [$_|_Rest] ->
-            {name, 1, io_lib:format("'~s'", [Name])};
-        _ ->
-            {name, 1, Name}
-    end.
-
+just_name({name, _LineNo, _Name} = Whole) ->
+    Whole.
 
 convert_arith_expr({op, OpStr, Expr1, Expr2}) ->
     OpFun = fun (Expr) ->
@@ -434,6 +427,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         keys ->
             list_to_binary(io_lib:format("jsonata_keys(~s)",
                                          [args_to_string(Expr)]));
+        sort ->
+            list_to_binary(io_lib:format("lists:sort(~s)",
+                                         [args_to_string(Expr)]));
         map ->
             %% lists:reverse(...) here because the argumenst to $map(...)
             %% and lists:map(...) are exactly the opposite: (Fun, List) versus
@@ -489,24 +485,24 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
 %% the format maintains that quote but ignores them if not necessary:
 %%      list_to_atom("lowercase") ==> lowercase
 %% So the quotes are maintained by the io_lib:format/2
-name_to_atom({name, _LineNo, V}) ->
-    io_lib:format("~p", [list_to_atom(V)]).
-%%
-%%
-replace_single_quotes({sqstring, LineNo, Value}) ->
-    {string, LineNo, lists:flatten(string:replace(Value, "'", "\"", all))}.
+name_to_binary({name, _LineNo, V}) ->
+    io_lib:format("<<\"~s\">>", [V]).
 %%
 %%
 remove_quotes({string, _LineNo, [$"|Str]}) ->
     case lists:reverse(Str) of
         [$"|StrD] ->
-            io_lib:format("~p", [list_to_atom(lists:reverse(StrD))])
+            io_lib:format("<<\"~s\">>", [lists:reverse(StrD)])
     end;
 remove_quotes({sqstring, _LineNo, [$'|Str]}) ->
     case lists:reverse(Str) of
         [$'|StrD] ->
-            io_lib:format("~p", [list_to_atom(lists:reverse(StrD))])
+            io_lib:format("<<\"~s\">>", [lists:reverse(StrD)])
     end.
+%%
+%%
+replace_single_quotes({sqstring, LineNo, Value}) ->
+    {string, LineNo, lists:flatten(string:replace(Value, "'", "\"", all))}.
 %%
 %%
 wrap_with_func([]) ->
