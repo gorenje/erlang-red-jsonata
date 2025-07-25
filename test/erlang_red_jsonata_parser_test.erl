@@ -54,6 +54,15 @@ foreach_parser_test_() ->
         end."
       },
       {
+       replace_spaces_in_file_names,
+       "$replace($$.file.name, /[abce ]/, \"_\")",
+       "fun (Msg) ->
+            re:replace(maps:get(<<\"name\">>, maps:get(<<\"file\">>, Msg)),
+                     \"[abce ]\", \"_\",
+                    [dotall,dollar_endonly,caseless,global,{return,list}])
+        end."
+      },
+      {
        funct_replace_with_four_args,
        "$replace( $$.context._datafile, \".json\", \".csv\", 20)",
        "fun (Msg) ->
@@ -325,5 +334,4 @@ foreach_parser_test_() ->
                          ?assertEqual(ResultStringRmSpace, Result)
                  end
                 } || {TestCaseName, SrcString, ResultString} <- Tests],
-
     {inparallel, TestList}.

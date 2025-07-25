@@ -67,6 +67,7 @@ Terminals
   int
   msg_obj
   name
+  regexp
   string
   sqstring
 .
@@ -167,6 +168,7 @@ expr -> name : '$1'.
 expr -> dollar name : '$2'.
 expr -> dollar name dot_names : {var_ref, '$2', '$3'}.
 expr -> function_call : '$1'.
+expr -> regexp : '$1'.
 
 %% num are used in arithmetic expressions, these are explicitly not the
 %% same as expr because strings cannot be added together - at least in
@@ -438,11 +440,17 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
                                          [args_to_string(lists:reverse(Expr))]));
         replace ->
             case Expr of
+                %% search term is a regexp ...
+                [A1, {regexp, _Lnum, A2}, A3] ->
+                    list_to_binary(io_lib:format(
+                                     "re:replace(~s, [dotall,dollar_endonly,caseless,global,{return,list}])",
+                                     [args_to_string([A1,A2,A3])]));
+
                 [_, _, _] ->
                     list_to_binary(io_lib:format(
                                      "lists:flatten(string:replace(~s, all))",
                                      [args_to_string(Expr)]));
-                %% a limit has been suplied, ignored!
+                %% TODO a limit has been suplied, ignored!
                 [A1, A2, A3, _] ->
                     list_to_binary(io_lib:format(
                                      "lists:flatten(string:replace(~s))",

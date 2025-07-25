@@ -48,6 +48,22 @@ replace_test() ->
         )
     ).
 
+replace_with_regexp_test() ->
+    ?assertEqual(
+        {ok, "Screen_Shot_2023-09-16_at_21.14.14.png"},
+        erlang_red_jsonata:execute(
+            "$replace($$.payload,/[ \t\r]/,\"_\")",
+            #{<<"payload">> => "Screen Shot 2023-09-16 at 21.14.14.png"}
+        )
+    ),
+    ?assertEqual(
+        {ok, "sadasd_dasd_____asdd__"},
+        erlang_red_jsonata:execute(
+            "$replace($$.payload,/[ \t\r]/,\"_\")",
+            #{<<"payload">> => "sadasd dasd \t \r asdd \r"}
+        )
+    ).
+
 %% erlfmt:ignore
 multistatement_test() ->
     ?assertEqual(

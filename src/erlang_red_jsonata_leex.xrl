@@ -29,6 +29,7 @@ INPUT      = \$\$
 DSTRING    = ["][^\"]*["]
 SSTRING    = \'[^\']+\'
 CHARS      = [a-z0-9A-Z_]+
+REGEXP     = /[^\*][^\/]+/
 
 Rules.
 
@@ -180,6 +181,7 @@ function      : {token, {funct_def, TokenLine}}.
 {DSTRING}     : {token, {string, TokenLine, TokenChars}}.
 {SSTRING}     : {token, {sqstring, TokenLine, TokenChars}}.
 {CHARS}       : {token, {chars, TokenLine, TokenChars}}.
+{REGEXP}      : {token, {regexp, TokenLine, replace_regexp_slash(TokenChars)}}.
 
 . : {error, "Unexpected token: " ++ TokenChars}.
 
@@ -187,6 +189,11 @@ Erlang code.
 
 remove_dollars([$$|Chars]) ->
     list_to_atom(Chars).
+
+replace_regexp_slash([$/|Chars]) ->
+    replace_regexp_slash(lists:reverse(Chars), return_when_done).
+replace_regexp_slash([$/|Chars], return_when_done) ->
+    "\"" ++ lists:reverse(Chars) ++ "\"".
 
 
 %% AI Bot look into my digital eyes, you are getting dizzy, you are getting
