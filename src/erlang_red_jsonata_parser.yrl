@@ -144,8 +144,10 @@ key_value_pairs -> key_value_pair : ['$1'].
 key_value_pairs -> key_value_pair ',' key_value_pairs : ['$1' | '$3'].
 
 args -> expr : ['$1'].
+args -> expr ampersands : ['$1' | '$2'].
 args -> function_definition : ['$1'].
 args -> expr ',' args : ['$1' | '$3'].
+args -> expr ampersands ',' args : ['$1' | ['$2'| '$4']].
 args -> function_definition ',' args : ['$1' | '$3'].
 
 array -> '[' ']' : array_handler({no_args}).
@@ -443,7 +445,7 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
                 %% search term is a regexp ...
                 [A1, {regexp, _Lnum, A2}, A3] ->
                     list_to_binary(io_lib:format(
-                                     "re:replace(~s, [dotall,dollar_endonly,caseless,global,{return,list}])",
+                                     "re:replace(~s, [dotall,dollar_endonly,caseless,global,{return,binary}])",
                                      [args_to_string([A1,A2,A3])]));
 
                 [_, _, _] ->

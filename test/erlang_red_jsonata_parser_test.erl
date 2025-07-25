@@ -59,7 +59,15 @@ foreach_parser_test_() ->
        "fun (Msg) ->
             re:replace(maps:get(<<\"name\">>, maps:get(<<\"file\">>, Msg)),
                      \"[abce ]\", \"_\",
-                    [dotall,dollar_endonly,caseless,global,{return,list}])
+                    [dotall,dollar_endonly,caseless,global,{return,binary}])
+        end."
+      },
+      {
+       to_string_with_ampersand,
+       "$toString($$.file.name & \"ddddd\")",
+       "fun (Msg) ->
+             to_string(maps:get(<<\"name\">>, maps:get(<<\"file\">>, Msg)),
+                       \"ddddd\")
         end."
       },
       {

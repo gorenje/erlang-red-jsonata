@@ -50,14 +50,14 @@ replace_test() ->
 
 replace_with_regexp_test() ->
     ?assertEqual(
-        {ok, "Screen_Shot_2023-09-16_at_21.14.14.png"},
+        {ok, <<"Screen_Shot_2023-09-16_at_21.14.14.png">>},
         erlang_red_jsonata:execute(
             "$replace($$.payload,/[ \t\r]/,\"_\")",
             #{<<"payload">> => "Screen Shot 2023-09-16 at 21.14.14.png"}
         )
     ),
     ?assertEqual(
-        {ok, "sadasd_dasd_____asdd__"},
+        {ok, <<"sadasd_dasd_____asdd__">>},
         erlang_red_jsonata:execute(
             "$replace($$.payload,/[ \t\r]/,\"_\")",
             #{<<"payload">> => "sadasd dasd \t \r asdd \r"}
@@ -293,6 +293,20 @@ tostring_from_anything_test() ->
         erlang_red_jsonata:execute(
             "$toString($$.payload)",
             #{<<"payload">> => 12131312}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"dddeee">>},
+        erlang_red_jsonata:execute(
+            "$toString($$.payload & \"eee\")",
+            #{<<"payload">> => "ddd"}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"dddeeefff">>},
+        erlang_red_jsonata:execute(
+            "$toString($$.payload & \"eee\" & \"fff\")",
+            #{<<"payload">> => "ddd"}
         )
     ),
     ?assertEqual(

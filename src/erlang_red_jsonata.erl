@@ -103,6 +103,8 @@ handle_local_function(to_string, [Arg]) ->
         true ->
             list_to_binary(io_lib:format("~p", [Arg]))
     end;
+handle_local_function(to_string, Arg) when is_list(Arg) ->
+    list_to_binary(Arg);
 handle_local_function(ered_millis, [Arg]) ->
     %% Arg contains the milliseconds for this evaluation, just
     %% return it - done.
