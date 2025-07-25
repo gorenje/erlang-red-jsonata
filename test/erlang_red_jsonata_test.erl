@@ -282,6 +282,21 @@ tostring_from_anything_test() ->
         )
     ),
     ?assertEqual(
+        {ok, <<"1753453562674_asd_asd____">>},
+        erlang_red_jsonata:execute(
+            "$toString(1753453562674 & \"_\" & $replace($$.file.name, /[\r\t\n ]/, \"_\"))",
+            #{<<"file">> => #{ <<"name">> => "asd asd \t \r"}}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"1753453562674_asd_asd____">>},
+        erlang_red_jsonata:execute(
+            "$toString($$.payload & \"_\" & $replace($$.file.name, /[\r\t\n ]/, \"_\"))",
+            #{<<"file">> => #{ <<"name">> => "asd asd \t \r"},
+              <<"payload">> => 1753453562674}
+        )
+    ),
+    ?assertEqual(
         {ok, <<"when">>},
         erlang_red_jsonata:execute(
             "$toString($$.payload)",
@@ -413,6 +428,63 @@ unsupport_function_test() ->
         {exception, <<"jsonata unsupported function: {fromMillis,[]}">>},
         erlang_red_jsonata:execute(
             "1 + $fromMillis()",
+            #{}
+        )
+    ).
+now_datestampe_milli_test() ->
+    ?assertEqual(
+        {ok, <<"2025-07-25T13:35:54.0+00:00">>},
+        erlang_red_jsonata:execute(
+            "$now(1753450554005)",
+            #{}
+        )
+    ).
+now_datestampe_micro_test() ->
+    ?assertEqual(
+        {ok, <<"2025-07-25T13:56:26.0+00:00">>},
+        erlang_red_jsonata:execute(
+            "$now(1753451786639490)",
+            #{}
+        )
+    ).
+now_datestampe_no_argumenmt_test() ->
+    ?assertEqual(
+        ok,
+        element(
+            1,
+            erlang_red_jsonata:execute(
+                "$now()",
+                #{}
+            )
+        )
+    ).
+now_datestampe_with_millis_test() ->
+    ?assertEqual(
+        ok,
+        element(
+            1,
+            erlang_red_jsonata:execute(
+                "$now($millis())",
+                #{}
+            )
+        )
+    ).
+
+now_datestampe_with_millis_and_ampersand_test() ->
+    ?assertEqual(
+        {ok, "the time is now 2025-07-25T13:35:54.0+00:00 exactly"},
+        erlang_red_jsonata:execute(
+            "\"the time is now \" & $now(1753450554005) & \" exactly\"",
+            #{}
+        )
+    ).
+
+now_datestampe_with_timezone_test() ->
+    ?assertEqual(
+        {exception,
+            <<"jsonata unsupported function: {jsonata_now,[1753451786639490,\"UTC\"]}">>},
+        erlang_red_jsonata:execute(
+            "$now(1753451786639490, \"UTC\")",
             #{}
         )
     ).

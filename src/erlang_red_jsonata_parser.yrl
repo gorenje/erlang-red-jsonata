@@ -472,6 +472,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
             %% this is a ErlangRED special to make the test for millis work
             list_to_binary(io_lib:format("timer:sleep(~s)",
                                          [args_to_string(Expr)]));
+        fromMillis ->
+            list_to_binary(io_lib:format("fromMillis(~s)",
+                                         [args_to_string(Expr)]));
         string ->
             %% $string is slightly different in JSONata, converting everything
             %% to their JSON representation except for strings. So we convert
@@ -484,8 +487,14 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
             %% with any function that gets too large.
             list_to_binary(io_lib:format("to_string(~s)",
                                          [args_to_string(Expr)]));
+        split ->
+            list_to_binary(io_lib:format("split(~s)",
+                                         [args_to_string(Expr)]));
+        now ->
+            list_to_binary(io_lib:format("jsonata_now(~s)",
+                                         [args_to_string(Expr)]));
         Unknown ->
-            list_to_binary(io_lib:format("~s(~s)",
+            list_to_binary(io_lib:format("unsupported_~s(~s)",
                                          [Unknown, args_to_string(Expr)]))
     end.
 

@@ -71,40 +71,57 @@ handle_local_function(split, Args) ->
             All = string:split(Str, Pat, all),
             lists:sublist(All, Lmt)
     end;
+%%
+handle_local_function(any_to_list, [Arg]) when is_float(Arg) ->
+    float_to_list(Arg, [short]);
+handle_local_function(any_to_list, [Arg]) when is_integer(Arg) ->
+    integer_to_list(Arg);
+handle_local_function(any_to_list, [Arg]) when is_binary(Arg) ->
+    binary_to_list(Arg);
+handle_local_function(any_to_list, [Arg]) when is_atom(Arg) ->
+    atom_to_list(Arg);
 handle_local_function(any_to_list, [Arg]) ->
-    %% some truths are truer than others.
-    case true of
-        true when is_float(Arg) ->
-            float_to_list(Arg, [short]);
-        true when is_integer(Arg) ->
-            integer_to_list(Arg);
-        true when is_binary(Arg) ->
-            binary_to_list(Arg);
-        true when is_atom(Arg) ->
-            atom_to_list(Arg);
-        true ->
-            Arg
-    end;
-handle_local_function(to_string, [Arg]) ->
-    case true of
-        %%
-        %% misnomer - converts the value to a binary that is displayed as
-        %% a string in the flow editor.
-        true when is_binary(Arg) ->
-            Arg;
-        true when is_list(Arg) ->
-            list_to_binary(Arg);
-        true when is_atom(Arg) ->
-            atom_to_binary(Arg);
-        true when is_integer(Arg) ->
-            integer_to_binary(Arg);
-        true when is_float(Arg) ->
-            list_to_binary(float_to_list(Arg, [short]));
-        true ->
-            list_to_binary(io_lib:format("~p", [Arg]))
-    end;
-handle_local_function(to_string, Arg) when is_list(Arg) ->
+    Arg;
+%%
+handle_local_function(to_string, [Arg]) when is_binary(Arg) -> Arg;
+handle_local_function(to_string, [Arg]) when is_list(Arg) ->
     list_to_binary(Arg);
+handle_local_function(to_string, [Arg]) when is_atom(Arg) ->
+    atom_to_binary(Arg);
+handle_local_function(to_string, [Arg]) when is_integer(Arg) ->
+    integer_to_binary(Arg);
+handle_local_function(to_string, [Arg]) when is_float(Arg) ->
+    list_to_binary(float_to_list(Arg, [short]));
+handle_local_function(to_string, [Arg]) ->
+    list_to_binary(io_lib:format("~p", [Arg]));
+handle_local_function(to_string, Arg) when is_list(Arg) ->
+    list_to_binary([any_to_list(A) || A <- Arg]);
+%%
+handle_local_function(jsonata_now, []) ->
+    iso_8601_datestamp(erlang:timestamp());
+handle_local_function(
+    jsonata_now, [Arg]
+) when is_integer(Arg), Arg > 1000_000_000_000_000 ->
+    % assume we're dealing with microseconds
+    MegaSec = Arg div 1000_000_000_000,
+    Ts = {
+        MegaSec,
+        Arg div 1000_000 - MegaSec * 1000_000,
+        Arg rem 1000_000
+    },
+    iso_8601_datestamp(Ts);
+handle_local_function(
+    jsonata_now, [Arg]
+) when is_integer(Arg) ->
+    % these are assumed to be milliseconds
+    MegaSec = Arg div 1000_000_000,
+    Ts = {
+        MegaSec,
+        Arg div 1000 - MegaSec * 1000_000,
+        Arg rem 1000_000
+    },
+    iso_8601_datestamp(Ts);
+%%
 handle_local_function(ered_millis, [Arg]) ->
     %% Arg contains the milliseconds for this evaluation, just
     %% return it - done.
@@ -151,11 +168,33 @@ jsonata_to_erlang(JSONataString) ->
 
 %%
 %%
-any_to_binary(V) when is_binary(V) ->
-    V;
 any_to_binary(V) when is_atom(V) ->
     atom_to_binary(V);
 any_to_binary(V) when is_list(V) ->
     list_to_binary(V);
 any_to_binary(V) ->
     V.
+
+any_to_list(V) when is_binary(V) ->
+    binary_to_list(V);
+any_to_list(V) when is_atom(V) ->
+    atom_to_list(V);
+any_to_list(V) when is_integer(V) ->
+    integer_to_list(V);
+any_to_list(V) when is_float(V) ->
+    float_to_list(V, [short]);
+any_to_list(V)->
+    V.
+
+
+%%
+%%
+iso_8601_datestamp(Timestamp) ->
+    {{Year, Month, Day}, {Hour, Min, Sec}} =
+        calendar:now_to_datetime(Timestamp),
+    list_to_binary(
+        io_lib:format(
+            "~.4.0w-~.2.0w-~.2.0wT~.2.0w:~.2.0w:~.2.0w.0+00:00",
+            [Year, Month, Day, Hour, Min, Sec]
+        )
+    ).

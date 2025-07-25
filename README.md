@@ -43,6 +43,7 @@ At the time of writing, this library supports a minimum set of functionality of 
 | $length | Supported |
 | $map | Supported |
 | $millis | Supported - including the requirement that multiple calls produce the same value |
+| $now | Supported including passing value, e.g., `$now($millis())` |
 | $replace | Supported but no regular expressions |
 | $split | Supported |
 | $string | Supported |

@@ -28,6 +28,27 @@ foreach_parser_test_() ->
         } end."
       },
       {
+       how_long_is_now,
+       "$now()",
+       "fun (Msg) ->
+             jsonata_now()
+        end."
+      },
+      {
+       how_long_is_now,
+       "$now(1753450554005)",
+       "fun (Msg) ->
+             jsonata_now(1753450554005)
+        end."
+      },
+      {
+       unsupported_functions,
+       "$pad()",
+       "fun (Msg) ->
+             unsupported_pad()
+        end."
+      },
+      {
        funct_simple_key_using_msg_test,
        "$count(msg.payload)",
        "fun (Msg) -> erlang:length(maps:get(<<\"payload\">>, Msg)) end."
@@ -119,6 +140,15 @@ foreach_parser_test_() ->
             123, 321.123, maps:get(<<\"_underscore\">>, Msg)
         end."
       },
+
+      {
+       to_string_with_two_ampersands,
+       "$toString($millis() & \"_\" & $replace($$.file.name, /[abcd ]/, \"_\"))",
+       "fun (Msg) ->
+                EREDMillis = erlang:system_time(millisecond), to_string(ered_millis(EREDMillis), \"_\", re:replace(maps:get(<<\"name\">>, maps:get(<<\"file\">>, Msg)), \"[abcd ]\", \"_\", [dotall,dollar_endonly,caseless,global,{return,binary}]))
+         end."
+      },
+
       {
        %% comments have to be statements
        ignore_comments_but_include_expressions,
