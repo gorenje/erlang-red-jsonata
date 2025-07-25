@@ -285,15 +285,17 @@ tostring_from_anything_test() ->
         {ok, <<"1753453562674_asd_asd____">>},
         erlang_red_jsonata:execute(
             "$toString(1753453562674 & \"_\" & $replace($$.file.name, /[\r\t\n ]/, \"_\"))",
-            #{<<"file">> => #{ <<"name">> => "asd asd \t \r"}}
+            #{<<"file">> => #{<<"name">> => "asd asd \t \r"}}
         )
     ),
     ?assertEqual(
         {ok, <<"1753453562674_asd_asd____">>},
         erlang_red_jsonata:execute(
             "$toString($$.payload & \"_\" & $replace($$.file.name, /[\r\t\n ]/, \"_\"))",
-            #{<<"file">> => #{ <<"name">> => "asd asd \t \r"},
-              <<"payload">> => 1753453562674}
+            #{
+                <<"file">> => #{<<"name">> => "asd asd \t \r"},
+                <<"payload">> => 1753453562674
+            }
         )
     ),
     ?assertEqual(
