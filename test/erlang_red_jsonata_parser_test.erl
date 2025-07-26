@@ -352,6 +352,13 @@ foreach_parser_test_() ->
         "fun (Msg) ->
            [1, 2, \"asdasd\", maps:get(<<\"payload\">>, Msg)]
         end."
+      },
+      {
+        random_function,
+        "$random()",
+        "fun (Msg) ->
+            random:uniform()
+        end."
       }
      ],
 

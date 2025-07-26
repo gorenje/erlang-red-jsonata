@@ -493,6 +493,8 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         now ->
             list_to_binary(io_lib:format("jsonata_now(~s)",
                                          [args_to_string(Expr)]));
+        random ->
+            list_to_binary(io_lib:format("random:uniform()",[]));
         Unknown ->
             list_to_binary(io_lib:format("unsupported_~s(~s)",
                                          [Unknown, args_to_string(Expr)]))

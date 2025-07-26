@@ -655,6 +655,31 @@ keys_of_single_maps_test() ->
         )
     ).
 
+random_value_test() ->
+    ?assertEqual(
+        ok,
+        element(
+            1,
+            erlang_red_jsonata:execute(
+                "$random()",
+                #{}
+            )
+        )
+    ),
+    ?assertEqual(
+        ok,
+        element(
+            1,
+            erlang_red_jsonata:execute(
+                "\"d: \" & $random() & \" dd \"",
+                #{}
+            )
+        )
+    ),
+
+    {ok, Val} = erlang_red_jsonata:execute("$random()", #{}),
+    ?assertEqual(true, Val > 0 andalso Val < 1).
+
 keys_of_list_of_maps_test() ->
     ?assertEqual(
         {ok, [<<"five">>, <<"four">>, <<"one">>, <<"three">>, <<"two">>]},

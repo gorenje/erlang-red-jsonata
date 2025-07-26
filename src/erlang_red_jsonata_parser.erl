@@ -291,6 +291,8 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         now ->
             list_to_binary(io_lib:format("jsonata_now(~s)",
                                          [args_to_string(Expr)]));
+        random ->
+            list_to_binary(io_lib:format("random:uniform()",[]));
         Unknown ->
             list_to_binary(io_lib:format("unsupported_~s(~s)",
                                          [Unknown, args_to_string(Expr)]))
@@ -524,7 +526,7 @@ yecctoken2string1(Other) ->
 
 
 
--file("/code/src/erlang_red_jsonata_parser.erl", 527).
+-file("/code/src/erlang_red_jsonata_parser.erl", 529).
 
 -dialyzer({nowarn_function, yeccpars2/7}).
 -compile({nowarn_unused_function,  yeccpars2/7}).
@@ -3531,4 +3533,4 @@ yeccpars2_133_(__Stack0) ->
   end | __Stack].
 
 
--file("/code/src/erlang_red_jsonata_parser.yrl", 540).
+-file("/code/src/erlang_red_jsonata_parser.yrl", 542).
