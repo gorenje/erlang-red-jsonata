@@ -43,14 +43,16 @@ At the time of writing, this library supports a minimum set of functionality of 
 | $length | Supported |
 | $map | Supported |
 | $millis | Supported - including the requirement that multiple calls produce the same value |
-| $now | Supported including passing value, e.g., `$now($millis())` |
+| $now | Supported - including passing value, e.g., `$now($millis())` |
 | $random | Supported |
-| $replace | Supported but no regular expressions |
+| $replace | Supported - initial support for regular expressions |
 | $split | Supported |
 | $string | Supported |
 | $sum | Supported |
-| $pauseMillis | Erlang-RED special: pause this many milli seconds |
-| $toString | Erlang-RED special basically the same as $string |
+| --- | --- |
+| $pauseMillis | (Erlang-RED only) Pause this many milli seconds |
+| $privdir | (Erlang-Red only) Retrieve the location of the /priv directory |
+| $toString | (Erlang-RED only) Similar to $string but different |
 
 Functions are defined in two places [in the parser](https://github.com/gorenje/erlang-red-jsonata/blob/f835ebb55c6df7f180ceeaeffed21a51125a25b7/src/erlang_red_jsonata_parser.yrl#L423-L484) or in the [evaluator](https://github.com/gorenje/erlang-red-jsonata/blob/f835ebb55c6df7f180ceeaeffed21a51125a25b7/src/erlang_red_jsonata.erl#L50-L109).
 

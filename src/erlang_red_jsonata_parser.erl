@@ -291,6 +291,20 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         now ->
             list_to_binary(io_lib:format("jsonata_now(~s)",
                                          [args_to_string(Expr)]));
+        privdir ->
+            StringArgTuple =
+                case Expr of
+                    {no_args} ->
+                        {"code:priv_dir(erlang_red)", []};
+                    [{T, _L, V}] when T =:= string; T =:= name ->
+                        {"code:priv_dir(~s)", [V]};
+                    [Lst] ->
+                        {"code:priv_dir(binary_to_atom(~s))", [Lst]};
+                    Expr ->
+                        {"unsupported_privdir(~s)", [args_to_string(Expr)]}
+                end,
+            list_to_binary(io_lib:format(element(1,StringArgTuple),
+                                         element(2,StringArgTuple)));
         random ->
             list_to_binary(io_lib:format("random:uniform()",[]));
         Unknown ->
@@ -526,7 +540,7 @@ yecctoken2string1(Other) ->
 
 
 
--file("/code/src/erlang_red_jsonata_parser.erl", 529).
+-file("/code/src/erlang_red_jsonata_parser.erl", 543).
 
 -dialyzer({nowarn_function, yeccpars2/7}).
 -compile({nowarn_unused_function,  yeccpars2/7}).
@@ -3533,4 +3547,4 @@ yeccpars2_133_(__Stack0) ->
   end | __Stack].
 
 
--file("/code/src/erlang_red_jsonata_parser.yrl", 542).
+-file("/code/src/erlang_red_jsonata_parser.yrl", 556).

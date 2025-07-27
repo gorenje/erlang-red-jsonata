@@ -168,8 +168,9 @@ in    : {token, {op_in,         TokenLine}}.
 
 %%
 %% Erlang-RED specials (pauseMillis makes test work, not usable in production)
-\$toString      : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
-\$pauseMillis   : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
+\$toString    : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
+\$pauseMillis : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
+\$privdir     : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
 
 %%
 %% function to define a user defined function

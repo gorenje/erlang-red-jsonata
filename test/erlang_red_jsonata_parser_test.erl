@@ -359,6 +359,42 @@ foreach_parser_test_() ->
         "fun (Msg) ->
             random:uniform()
         end."
+      },
+      {
+        privdir_function_no_args,
+        "$privdir()",
+        "fun (Msg) ->
+           code:priv_dir(erlang_red)
+        end."
+      },
+      {
+        privdir_function_name_arg,
+        "$privdir(ind)",
+        "fun (Msg) ->
+           code:priv_dir(ind)
+        end."
+      },
+      {
+        privdir_function_string_arg,
+        "$privdir(\"ind\")",
+        "fun (Msg) ->
+           code:priv_dir(\"ind\")
+        end."
+      },
+      {
+        privdir_function_variable_access_arg,
+        "$privdir($$.app.name)",
+        "fun (Msg) ->
+           code:priv_dir(binary_to_atom(maps:get(<<\"name\">>,
+                                                  maps:get(<<\"app\">>, Msg))))
+        end."
+      },
+      {
+        privdir_fails_with_expressions,
+        "$privdir(\"ddd\" & \"ddd\")",
+        "fun (Msg) ->
+              unsupported_privdir(\"ddd\", \"ddd\")
+        end."
       }
      ],
 

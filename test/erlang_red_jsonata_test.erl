@@ -680,6 +680,63 @@ random_value_test() ->
     {ok, Val} = erlang_red_jsonata:execute("$random()", #{}),
     ?assertEqual(true, Val > 0 andalso Val < 1).
 
+privdir_test() ->
+    %% without an argument, it's assumed to be erlang_red - the application
+    %% name.
+    ?assertEqual(
+        {ok, {error,bad_name}},
+       erlang_red_jsonata:execute(
+         "$privdir()",
+         #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, {error,bad_name}},
+       erlang_red_jsonata:execute(
+         "$privdir(\"string\")",
+         #{}
+        )
+    ),
+    %% this is something like:
+    %%    "/code/_build/test/lib/erlang_red_jsonata/priv"
+    %% i.e. specific to the location of this code base
+    {ok, PrivDir} = erlang_red_jsonata:execute(
+                      "$privdir(erlang_red_jsonata)",
+                      #{}
+                     ),
+
+    [<<"priv">>, <<"erlang_red_jsonata">> | _Re] =
+        lists:reverse(re:split(PrivDir, element(2, re:compile("/")))),
+
+
+    %% strings are also valid. Also PrivDir should be the same in the following
+    %% two calls, so use the same variable name to ensure that.
+    {ok, PrivDir} =  erlang_red_jsonata:execute(
+                       "$privdir(\"erlang_red_jsonata\")",
+                       #{}
+                      ),
+
+
+    %% also allow variables from the message to be used as application name
+    ?assertEqual(
+        {ok, PrivDir},
+       erlang_red_jsonata:execute(
+         "$privdir($$.appname)",
+         #{ <<"appname">> => <<"erlang_red_jsonata">>}
+        )
+      ),
+
+    %% to a depth of 2
+    ?assertEqual(
+        {ok, PrivDir},
+       erlang_red_jsonata:execute(
+         "$privdir($$.app.name)",
+         #{ <<"app">> => #{ <<"name">> => <<"erlang_red_jsonata">>}}
+        )
+      ).
+
+
+
 keys_of_list_of_maps_test() ->
     ?assertEqual(
         {ok, [<<"five">>, <<"four">>, <<"one">>, <<"three">>, <<"two">>]},

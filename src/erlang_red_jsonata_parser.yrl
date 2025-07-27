@@ -493,6 +493,20 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         now ->
             list_to_binary(io_lib:format("jsonata_now(~s)",
                                          [args_to_string(Expr)]));
+        privdir ->
+            StringArgTuple =
+                case Expr of
+                    {no_args} ->
+                        {"code:priv_dir(erlang_red)", []};
+                    [{T, _L, V}] when T =:= string; T =:= name ->
+                        {"code:priv_dir(~s)", [V]};
+                    [Lst] ->
+                        {"code:priv_dir(binary_to_atom(~s))", [Lst]};
+                    Expr ->
+                        {"unsupported_privdir(~s)", [args_to_string(Expr)]}
+                end,
+            list_to_binary(io_lib:format(element(1,StringArgTuple),
+                                         element(2,StringArgTuple)));
         random ->
             list_to_binary(io_lib:format("random:uniform()",[]));
         Unknown ->
