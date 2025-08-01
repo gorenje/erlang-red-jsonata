@@ -73,7 +73,7 @@ in    : {token, {op_in,         TokenLine}}.
 \;    : {token, {';',   TokenLine}}.
 \?    : {token, {question,TokenLine}}.
 \=    : {token, {eq,       TokenLine}}.
-\%    : {token, {percent,   TokenLine}}.
+\%    : {token, {'%',       TokenLine}}.
 \<    : {token, {lt,         TokenLine}}.
 \>    : {token, {gt,          TokenLine}}.
 \"    : {token, {doublequote,  TokenLine}}.

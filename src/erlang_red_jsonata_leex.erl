@@ -2959,7 +2959,7 @@ yyaction_28(TokenLine) ->
 -compile({inline,yyaction_29/1}).
 -file("/code/src/erlang_red_jsonata_leex.xrl", 74).
 yyaction_29(TokenLine) ->
-     { token, { percent, TokenLine } } .
+     { token, { '%', TokenLine } } .
 
 -compile({inline,yyaction_30/1}).
 -file("/code/src/erlang_red_jsonata_leex.xrl", 75).
