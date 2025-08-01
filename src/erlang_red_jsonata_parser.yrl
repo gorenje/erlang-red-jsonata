@@ -253,6 +253,8 @@ to_map_get([{name, _LineNo, V}|T], LastMap) ->
 just_name({name, _LineNo, _Name} = Whole) ->
     Whole.
 
+convert_arith_expr({op, {'%', Num}, Expr1, Expr2}) ->
+    convert_arith_expr({op, {'rem', Num}, Expr1, Expr2});
 convert_arith_expr({op, OpStr, Expr1, Expr2}) ->
     OpFun = fun (Expr) ->
                     case Expr of

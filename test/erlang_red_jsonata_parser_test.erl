@@ -110,10 +110,18 @@ foreach_parser_test_() ->
         end."
       },
       {
-       remainder_operator,
+       remainder_modulo_operator,
        "($$.payload + 1) % $$.ten",
        "fun (Msg) ->
-             (maps:get(<<\"payload\">>, Msg) + 1) % maps:get(<<\"ten\">>, Msg)
+             (maps:get(<<\"payload\">>, Msg) + 1) rem maps:get(<<\"ten\">>, Msg)
+        end."
+      },
+      {
+       remainder_modulo_operator_two_pluses,
+       "($$.payload + 1 + 3 + 5) % $$.ten",
+       "fun (Msg) ->
+             (maps:get(<<\"payload\">>, Msg) + 1 + 3 + 5) rem
+                                    maps:get(<<\"ten\">>, Msg)
         end."
       },
       {

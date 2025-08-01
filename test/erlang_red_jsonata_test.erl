@@ -710,6 +710,23 @@ random_value_test() ->
     {ok, Val} = erlang_red_jsonata:execute("$random()", #{}),
     ?assertEqual(true, Val > 0 andalso Val < 1).
 
+modulo_test() ->
+    ?assertEqual(
+        {ok, 9},
+       erlang_red_jsonata:execute(
+         "($$.payload + 1 + 2 + 4) % $$.ten",
+         #{ <<"payload">> => 12, <<"ten">> => 10 }
+        )
+      ),
+    ?assertEqual(
+        {ok, 2},
+       erlang_red_jsonata:execute(
+         "($$.currentframe + 1 + 3) % $$.totalframes",
+         #{ <<"currentframe">> => 12, <<"totalframes">> => 7 }
+        )
+      ).
+
+
 privdir_test() ->
     %% without an argument, it's assumed to be erlang_red - the application
     %% name.

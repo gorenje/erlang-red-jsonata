@@ -45,6 +45,8 @@ to_map_get([{name, _LineNo, V}|T], LastMap) ->
 just_name({name, _LineNo, _Name} = Whole) ->
     Whole.
 
+convert_arith_expr({op, {'%', Num}, Expr1, Expr2}) ->
+    convert_arith_expr({op, {'rem', Num}, Expr1, Expr2});
 convert_arith_expr({op, OpStr, Expr1, Expr2}) ->
     OpFun = fun (Expr) ->
                     case Expr of
@@ -545,7 +547,7 @@ yecctoken2string1(Other) ->
 
 
 
--file("/code/src/erlang_red_jsonata_parser.erl", 548).
+-file("/code/src/erlang_red_jsonata_parser.erl", 550).
 
 -dialyzer({nowarn_function, yeccpars2/7}).
 -compile({nowarn_unused_function,  yeccpars2/7}).
@@ -3853,4 +3855,4 @@ yeccpars2_131_(__Stack0) ->
   end | __Stack].
 
 
--file("/code/src/erlang_red_jsonata_parser.yrl", 567).
+-file("/code/src/erlang_red_jsonata_parser.yrl", 569).
