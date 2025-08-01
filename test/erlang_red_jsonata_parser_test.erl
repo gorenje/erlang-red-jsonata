@@ -87,8 +87,8 @@ foreach_parser_test_() ->
        to_string_with_ampersand,
        "$toString($$.file.name & \"ddddd\")",
        "fun (Msg) ->
-             to_string(maps:get(<<\"name\">>, maps:get(<<\"file\">>, Msg)),
-                       \"ddddd\")
+             to_string(any_to_list(maps:get(<<\"name\">>,
+                      maps:get(<<\"file\">>, Msg))) ++ \"ddddd\")
         end."
       },
       {
@@ -107,6 +107,20 @@ foreach_parser_test_() ->
             erlang:length(maps:get(<<\"key4\">>, maps:get(<<\"key3\">>,
                              maps:get(<<\"key2\">>, maps:get(<<\"key1\">>,
                                 maps:get(<<\"payload\">>, Msg))))))
+        end."
+      },
+      {
+       remainder_operator,
+       "($$.payload + 1) % $$.ten",
+       "fun (Msg) ->
+             (maps:get(<<\"payload\">>, Msg) + 1) % maps:get(<<\"ten\">>, Msg)
+        end."
+      },
+      {
+       funct_length_with_concat,
+       "$length(\"ddd\" & \"dddd\" & \"2222\" & \"2222\")",
+       "fun (Msg) ->
+            jsonata_length(\"ddd\" ++ \"dddd\" ++ \"2222\" ++ \"2222\")
         end."
       },
       {
@@ -145,8 +159,13 @@ foreach_parser_test_() ->
        to_string_with_two_ampersands,
        "$toString($millis() & \"_\" & $replace($$.file.name, /[abcd ]/, \"_\"))",
        "fun (Msg) ->
-                EREDMillis = erlang:system_time(millisecond), to_string(ered_millis(EREDMillis), \"_\", re:replace(maps:get(<<\"name\">>, maps:get(<<\"file\">>, Msg)), \"[abcd ]\", \"_\", [dotall,dollar_endonly,caseless,global,{return,binary}]))
-         end."
+              EREDMillis = erlang:system_time(millisecond),
+              to_string(any_to_list(ered_millis(EREDMillis)) ++ \"_\" ++
+              any_to_list(re:replace(maps:get(<<\"name\">>,
+                             maps:get(<<\"file\">>, Msg)),
+                             \"[abcd ]\", \"_\",
+                       [dotall,dollar_endonly,caseless,global,{return,binary}])))
+        end."
       },
 
       {
@@ -371,29 +390,28 @@ foreach_parser_test_() ->
         privdir_function_name_arg,
         "$privdir(ind)",
         "fun (Msg) ->
-           code:priv_dir(ind)
+           jsonata_priv_dir(ind)
         end."
       },
       {
         privdir_function_string_arg,
         "$privdir(\"ind\")",
         "fun (Msg) ->
-           code:priv_dir(\"ind\")
+           code:priv_dir(list_to_atom(\"ind\"))
         end."
       },
       {
         privdir_function_variable_access_arg,
         "$privdir($$.app.name)",
         "fun (Msg) ->
-           code:priv_dir(binary_to_atom(maps:get(<<\"name\">>,
-                                                  maps:get(<<\"app\">>, Msg))))
+           jsonata_priv_dir(maps:get(<<\"name\">>, maps:get(<<\"app\">>, Msg)))
         end."
       },
       {
-        privdir_fails_with_expressions,
-        "$privdir(\"ddd\" & \"ddd\")",
+        privdir_succeeds_with_expressions,
+        "$privdir(\"ddd\" & \"ddd\" & \"ddd\")",
         "fun (Msg) ->
-              unsupported_privdir(\"ddd\", \"ddd\")
+              jsonata_priv_dir(\"ddd\" ++ \"ddd\" ++ \"ddd\")
         end."
       }
      ],

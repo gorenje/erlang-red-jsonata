@@ -18,6 +18,8 @@ Nonterminals
   ampersand
   ampersands
   args
+  arg
+  arith_operators
   array
   cmt_content
   comment
@@ -43,6 +45,7 @@ Nonterminals
 %%
 Terminals
   '&'
+  '%'
   '('
   ')'
   '*'
@@ -143,12 +146,11 @@ key_value_pair ->
 key_value_pairs -> key_value_pair : ['$1'].
 key_value_pairs -> key_value_pair ',' key_value_pairs : ['$1' | '$3'].
 
-args -> expr : ['$1'].
-args -> expr ampersands : ['$1' | '$2'].
-args -> function_definition : ['$1'].
-args -> expr ',' args : ['$1' | '$3'].
-args -> expr ampersands ',' args : ['$1' | ['$2'| '$4']].
-args -> function_definition ',' args : ['$1' | '$3'].
+args -> arg : [ '$1' ].
+args -> arg ',' args : [ '$1' | '$3' ].
+
+arg -> function_definition : '$1'.
+arg -> statement : '$1'.
 
 array -> '[' ']' : array_handler({no_args}).
 array -> '[' args ']' : array_handler('$2').
@@ -181,11 +183,15 @@ num -> float : '$1'.
 num -> num_function_call : '$1'.
 num -> arith_expr : '$1'.
 
+arith_operators -> '+' : '$1'.
+arith_operators -> '-' : '$1'.
+arith_operators -> '/' : '$1'.
+arith_operators -> '%' : '$1'.
+arith_operators -> '*' : '$1'.
+
 %% arithmetic expressions
-arith_expr -> num '*' num : {op, '$2', '$1', '$3' }.
-arith_expr -> num '+' num : {op, '$2', '$1', '$3' }.
-arith_expr -> num '/' num : {op, '$2', '$1', '$3' }.
-arith_expr -> num '-' num : {op, '$2', '$1', '$3' }.
+arith_expr -> num arith_operators num : {op, '$2', '$1', '$3' }.
+arith_expr -> '(' arith_expr ')' : "(" ++ convert_arith_expr('$2') ++ ")".
 
 dot_name -> '.' name : just_name('$2').
 
@@ -372,7 +378,7 @@ args_to_string([{name, _LineNaume, String}|T]) ->
 args_to_string([{string, _LineNaume, String}|T]) ->
     args_to_string(T, io_lib:format("~s", [String]));
 args_to_string([H|T]) ->
-    args_to_string(T, io_lib:format("~s", [to_list(H)])).
+    args_to_string(T, io_lib:format("~s", [H])).
 
 args_to_string([], Acc) ->
     Acc;
@@ -385,7 +391,7 @@ args_to_string([{string, _LineNo, String}|T], Acc) ->
 args_to_string([{name, _LineNo, String}|T], Acc) ->
     args_to_string(T, io_lib:format("~s, ~s", [Acc, String]));
 args_to_string([H|T], Acc) ->
-    args_to_string(T, io_lib:format("~s, ~s", [Acc, to_list(H)])).
+    args_to_string(T, io_lib:format("~s, ~s", [Acc, H])).
 
 %%
 %% Support single simple inline function def:
@@ -394,8 +400,11 @@ inline_function_definition([{name, _LineNo, Var}],
                            {var_ref, {name, _LineNum, Var}, DotNames}) ->
     list_to_binary(io_lib:format("fun(V) -> ~s end",
                                  [to_map_get(DotNames, "V")]));
+inline_function_definition([Var], {var_ref, {name, _LineNum, Var}, DotNames}) ->
+    list_to_binary(io_lib:format("fun(V) -> ~s end",
+                                 [to_map_get(DotNames, "V")]));
 inline_function_definition(_Args, _Expr) ->
-    unsupported.
+    unsupported_funct_def.
 
 %%
 %% This converts the list of inbuilt functions -
@@ -423,7 +432,7 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
             list_to_binary(io_lib:format("erlang:length(~s)",
                                          [args_to_string(Expr)]));
         length ->
-            list_to_binary(io_lib:format("erlang:length(~s)",
+            list_to_binary(io_lib:format("jsonata_length(~s)",
                                          [args_to_string(Expr)]));
         sum ->
             list_to_binary(io_lib:format("lists:sum(~s)",
@@ -498,12 +507,14 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
                 case Expr of
                     {no_args} ->
                         {"code:priv_dir(erlang_red)", []};
-                    [{T, _L, V}] when T =:= string; T =:= name ->
-                        {"code:priv_dir(~s)", [V]};
+                    [[$"|Lst]] ->
+                        {"code:priv_dir(list_to_atom(\"~s))", [Lst]};
+                    [[$<|Lst]] ->
+                        {"code:priv_dir(binary_to_atom(<~p))", [Lst]};
                     [Lst] ->
-                        {"code:priv_dir(binary_to_atom(~s))", [Lst]};
-                    Expr ->
-                        {"unsupported_privdir(~s)", [args_to_string(Expr)]}
+                        {"jsonata_priv_dir(~s)", [Lst]};
+                    _ ->
+                        {"unsupported_privdir_argument(~p)", [Expr]}
                 end,
             list_to_binary(io_lib:format(element(1,StringArgTuple),
                                          element(2,StringArgTuple)));

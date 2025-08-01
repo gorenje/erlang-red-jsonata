@@ -47,6 +47,18 @@ execute(JSONata, Msg) ->
 %% Inspired by this blog post:
 %% https://grantwinney.com/how-to-evaluate-a-string-of-code-in-erlang-at-runtime/
 %%
+handle_local_function(jsonata_priv_dir, [Args]) when is_binary(Args) ->
+    code:priv_dir(binary_to_atom(Args));
+handle_local_function(jsonata_priv_dir, [Args]) when is_atom(Args) ->
+    code:priv_dir(Args);
+handle_local_function(jsonata_priv_dir, [Args]) when is_list(Args) ->
+    code:priv_dir(list_to_atom(Args));
+
+handle_local_function(jsonata_length, [Args]) when is_binary(Args) ->
+    erlang:byte_size(Args);
+handle_local_function(jsonata_length, [Args]) ->
+    erlang:length(Args);
+
 handle_local_function(jsonata_keys, Args) ->
     case Args of
         [Lst] when is_list(Lst) ->

@@ -2,7 +2,7 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-count_test() ->
+count_and_length_test() ->
     ?assertEqual(
         {ok, 4},
         erlang_red_jsonata:execute(
@@ -16,7 +16,37 @@ count_test() ->
             "$count(msg.payload)",
             #{<<"payload">> => [1, 2, 3, 4]}
         )
-    ).
+      ),
+    ?assertEqual(
+        {ok, 4},
+        erlang_red_jsonata:execute(
+            "$length(msg.payload)",
+            #{<<"payload">> => <<1, 2, 3, 4>>}
+        )
+      ),
+    ?assertEqual(
+        {ok, 4},
+        erlang_red_jsonata:execute(
+            "$length(msg.payload)",
+            #{<<"payload">> => "1234"}
+        )
+      ),
+    ?assertEqual(
+        {ok, 4},
+        erlang_red_jsonata:execute(
+            "$length(msg.payload)",
+            #{<<"payload">> => [1,2,3,4]}
+        )
+      ),
+    ?assertEqual(
+        {ok, 8},
+        erlang_red_jsonata:execute(
+            "$length(\"1\" & \"d\" & 12 & $$.payload)",
+            #{<<"payload">> => [1,2,3,4]}
+        )
+      ).
+
+
 
 parse_error_test() ->
     ?assertEqual(
@@ -398,7 +428,7 @@ name_as_funct_argument_test() ->
         )
     ).
 
-empty_funct_arguments_test() ->
+empty_funct_arguments_with_millis_test() ->
     ?assertEqual(
         {ok, <<"ok">>},
         erlang_red_jsonata:execute(
@@ -733,7 +763,16 @@ privdir_test() ->
          "$privdir($$.app.name)",
          #{ <<"app">> => #{ <<"name">> => <<"erlang_red_jsonata">>}}
         )
+      ),
+
+    ?assertEqual(
+        {ok, PrivDir},
+       erlang_red_jsonata:execute(
+         "$privdir(\"erlang_\" & \"red_\" & \"jsonata\")",
+         #{ <<"app">> => #{ <<"name">> => <<"erlang_red_jsonata">>}}
+        )
       ).
+
 
 
 
