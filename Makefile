@@ -5,7 +5,8 @@ build-docker-container:
 	docker build -f Dockerfile.dev -t erlang-jsonata-shell .
 
 start-docker-shell: build-docker-container
-	docker run -it -v /mnt/github/erlang-red-jsonata:/code -w /code --rm erlang-jsonata-shell bash
+	docker run -it -v /mnt/github/erlang-red-jsonata:/code -w /code \
+             --hostname ered_jsonata --rm erlang-jsonata-shell bash
 
 enter-docker-shell:
 	docker exec -it $$(docker ps -f ancestor=erlang-jsonata-shell -q) bash
