@@ -1,7 +1,7 @@
 {application, erlang_red_jsonata, [
     {description,
         "An implementation in Erlang of the JSONata transformation language."},
-    {vsn, "0.1.7"},
+    {vsn, "0.1.8"},
     {registered, []},
     {applications, [
         kernel,
@@ -9,6 +9,6 @@
     ]},
     {env, []},
     {modules, []},
-    {licenses, ["Don't Do Evil"]},
+    {licenses, ["Apache-2.0", "Don't Do Evil"]},
     {links, []}
 ]}.
