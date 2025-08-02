@@ -12,7 +12,13 @@
 %% This module provides a single interface for evaluating a JSONata stanza
 %% in the presence of the Msg object.
 %%
-
+-spec execute(
+     JSONata :: string(),
+     Msg :: map()
+) -> {ok, ReturnValue :: any() }
+     | {error, ErrMsg :: string() }
+     | {unsupported, Description :: string() }
+     | {exception, { Error :: atom(), Message :: tuple(), Stack :: [tuple()] }}.
 execute(JSONata, Msg) when is_binary(JSONata) ->
     execute(binary_to_list(JSONata), Msg);
 execute(JSONata, Msg) ->
@@ -35,12 +41,14 @@ execute(JSONata, Msg) ->
     catch
         error:jsonata_unsupported:Stacktrace ->
             [H | _] = Stacktrace,
-            {exception,
+            {unsupported,
                 list_to_binary(
                     io_lib:format(
                         "jsonata unsupported function: ~p", element(3, H)
                     )
-                )}
+                 )};
+        E:M:S ->
+            {exception, {E,M,S}}
     end.
 
 %%

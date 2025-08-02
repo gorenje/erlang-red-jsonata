@@ -457,13 +457,13 @@ empty_funct_arguments_in_expr_test() ->
 
 unsupport_function_test() ->
     ?assertEqual(
-        {exception, <<"jsonata unsupported function: {fromMillis,[]}">>},
+        {unsupported, <<"jsonata unsupported function: {fromMillis,[]}">>},
         erlang_red_jsonata:execute(
             "1 + $fromMillis()",
             #{}
         )
     ).
-now_datestampe_milli_test() ->
+now_datestamp_milli_test() ->
     ?assertEqual(
         {ok, <<"2025-07-25T13:35:54.0+00:00">>},
         erlang_red_jsonata:execute(
@@ -471,7 +471,7 @@ now_datestampe_milli_test() ->
             #{}
         )
     ).
-now_datestampe_micro_test() ->
+now_datestamp_micro_test() ->
     ?assertEqual(
         {ok, <<"2025-07-25T13:56:26.0+00:00">>},
         erlang_red_jsonata:execute(
@@ -479,7 +479,7 @@ now_datestampe_micro_test() ->
             #{}
         )
     ).
-now_datestampe_no_argumenmt_test() ->
+now_datestamp_no_argumenmt_test() ->
     ?assertEqual(
         ok,
         element(
@@ -490,7 +490,7 @@ now_datestampe_no_argumenmt_test() ->
             )
         )
     ).
-now_datestampe_with_millis_test() ->
+now_datestamp_with_millis_test() ->
     ?assertEqual(
         ok,
         element(
@@ -502,7 +502,7 @@ now_datestampe_with_millis_test() ->
         )
     ).
 
-now_datestampe_with_millis_and_ampersand_test() ->
+now_datestamp_with_millis_and_ampersand_test() ->
     ?assertEqual(
         {ok, "the time is now 2025-07-25T13:35:54.0+00:00 exactly"},
         erlang_red_jsonata:execute(
@@ -511,9 +511,9 @@ now_datestampe_with_millis_and_ampersand_test() ->
         )
     ).
 
-now_datestampe_with_timezone_test() ->
+now_datestamp_with_timezone_test() ->
     ?assertEqual(
-        {exception,
+        {unsupported,
             <<"jsonata unsupported function: {jsonata_now,[1753451786639490,\"UTC\"]}">>},
         erlang_red_jsonata:execute(
             "$now(1753451786639490, \"UTC\")",
@@ -790,8 +790,24 @@ privdir_test() ->
         )
       ).
 
-
-
+exceptions_and_errors_are_captured_test() ->
+    {exception, {error, {badkey, <<"payload">>}, _Stacktrace}} =
+        erlang_red_jsonata:execute(
+          "$$.payload",
+          #{}
+         ),
+    {error, {error, {1,erlang_red_jsonata_parser,
+                     ["syntax error before: ",[]]}}} =
+        erlang_red_jsonata:execute(
+          "$$.payload + ",
+          #{<<"payload">> => ""}
+         ),
+    {error, {error, {1,erlang_red_jsonata_parser,
+                                     ["syntax error before: ","'&'"]}}} =
+        erlang_red_jsonata:execute(
+          "$$.payload + & \"\" ",
+          #{<<"payload">> => "a"}
+         ).
 
 keys_of_list_of_maps_test() ->
     ?assertEqual(
