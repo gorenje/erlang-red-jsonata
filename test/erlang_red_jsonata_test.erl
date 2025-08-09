@@ -2,6 +2,24 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+distinct_elements_in_list_test() ->
+    ?assertEqual(
+        {ok, [1, 2, 3, 4]},
+        erlang_red_jsonata:execute(
+            "$distinct($$.payload)",
+            #{<<"payload">> => [1, 2, 3, 4]}
+        )
+      ),
+    ?assertEqual(
+        {ok, ["9f07e3399b87b739"]},
+        erlang_red_jsonata:execute(
+            "$distinct($$.payload)",
+          #{<<"payload">> => ["9f07e3399b87b739","9f07e3399b87b739",
+                              "9f07e3399b87b739","9f07e3399b87b739",
+                              "9f07e3399b87b739","9f07e3399b87b739"]}
+        )
+      ).
+
 count_and_length_test() ->
     ?assertEqual(
         {ok, 4},

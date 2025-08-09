@@ -39,6 +39,7 @@ At the time of writing, this library supports a minimum set of functionality of 
 | Function | Comment |
 | ---- | ------- |
 | $count | Supported |
+| $distinct | Supported |
 | $keys | Supported |
 | $length | Supported |
 | $map | Supported |

@@ -445,6 +445,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         sort ->
             list_to_binary(io_lib:format("lists:sort(~s)",
                                          [args_to_string(Expr)]));
+        distinct ->
+            list_to_binary(io_lib:format("lists:uniq(~s)",
+                                         [args_to_string(Expr)]));
         map ->
             %% lists:reverse(...) here because the argumenst to $map(...)
             %% and lists:map(...) are exactly the opposite: (Fun, List) versus
