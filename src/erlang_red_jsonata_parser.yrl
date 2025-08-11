@@ -430,6 +430,9 @@ inline_function_definition(_Args, _Expr) ->
 %%
 convert_funct({funct,_LineNo,FunctName}, Expr) ->
     case FunctName of
+        append ->
+            list_to_binary(io_lib:format("lists:append(~s)",
+                                         [args_to_string(Expr)]));
         count ->
             list_to_binary(io_lib:format("erlang:length(~s)",
                                          [args_to_string(Expr)]));

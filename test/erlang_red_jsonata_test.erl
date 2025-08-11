@@ -2,6 +2,24 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+append_functionality_test() ->
+    ?assertEqual(
+        {ok, [<<1,2,3,4,5>>,<<23>>,<<"\"">>,<<"-">>]},
+        erlang_red_jsonata:execute(
+            "$append([$$.payload], $$.array)",
+            #{<<"payload">> => <<1,2,3,4,5>>,
+              <<"array">> => [<<23>>,<<34>>,<<45>>] }
+        )
+      ),
+    ?assertEqual(
+        {ok, [<<1,2,3,4,5>>,<<23>>,[<<"\"">>],<<"-">>]},
+        erlang_red_jsonata:execute(
+            "$append([$$.payload], $$.array)",
+            #{<<"payload">> => <<1,2,3,4,5>>,
+              <<"array">> => [<<23>>,[<<34>>],<<45>>] }
+        )
+      ).
+
 distinct_elements_in_list_test() ->
     ?assertEqual(
         {ok, [1, 2, 3, 4]},
