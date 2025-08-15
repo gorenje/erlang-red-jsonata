@@ -704,7 +704,45 @@ split_string_test() ->
             "$split($$.payload,\",\")",
             #{<<"payload">> => "one,two,three,four"}
         )
-    ).
+      ),
+    ?assertEqual(
+        {ok, "71"},
+        erlang_red_jsonata:execute(
+            "$split($$.payload,\"/\")[-1]",
+            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+        )
+      ),
+    ?assertEqual(
+        {ok, "95044"},
+        erlang_red_jsonata:execute(
+            "$split($$.payload,\"/\")[-2]",
+            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+        )
+      ),
+    ?assertEqual(
+        {ok, "https:"},
+        erlang_red_jsonata:execute(
+            "$split($$.payload,\"/\")[0]",
+            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+        )
+      ),
+    ?assertEqual(
+        {ok, "t"},
+        erlang_red_jsonata:execute(
+            "$split($$.payload,\"/\")[3]",
+            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+        )
+      ),
+    ?assertEqual(
+        {ok, ["t","71","95044",
+              "should-debug-nodes-be-capable-of-passing-the-message-forwards"]},
+        erlang_red_jsonata:execute(
+            "[$split($$.payload,\"/\")[3],$split($$.payload,\"/\")[-1],
+                 $split($$.payload,\"/\")[-2],$split($$.payload,\"/\")[-3]]",
+            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+        )
+      ).
+
 
 keys_of_single_maps_test() ->
     ?assertEqual(

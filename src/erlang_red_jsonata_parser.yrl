@@ -118,6 +118,12 @@ statement -> arith_expr : convert_arith_expr('$1').
 %% arrays need supporting
 statement -> array : '$1'.
 
+%% support this --> $split(....)[...]
+statement -> function_call '[' expr ']' :
+                 function_call_with_array('$1', positive, '$3').
+statement -> function_call '[' '-' expr ']' :
+                 function_call_with_array('$1', negative, '$4').
+
 %% comments have rights to be statements as well.
 statement -> comments : comment.
 
@@ -222,6 +228,12 @@ comments -> comment comments.
 %%
 %%
 Erlang code.
+
+function_call_with_array(FunCall, positive, {int, _L, V}) ->
+    io_lib:format("lists:nth(~b, ~s)", [V+1, FunCall]);
+
+function_call_with_array(FunCall, negative, {int, _L, V}) ->
+    io_lib:format("lists:nth(~b, lists:reverse(~s))", [V, FunCall]).
 
 array_handler(V) ->
     io_lib:format("[~s]", [args_to_string(V)]).
