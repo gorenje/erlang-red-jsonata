@@ -2,6 +2,24 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+formatbase_functionality_test() ->
+    ?assertEqual(
+        {ok, <<"feedbabe">>},
+        erlang_red_jsonata:execute(
+            "$formatBase($$.payload, 16)",
+            #{<<"payload">> => 4276992702}
+        )
+      ),
+    ?assertEqual(
+        ok,
+       element(1,
+        erlang_red_jsonata:execute(
+            "$formatBase($random() * 100000, 16)",
+            #{<<"payload">> => 4276992702}
+        ))
+      ).
+
+
 append_functionality_test() ->
     ?assertEqual(
         {ok, [<<1,2,3,4,5>>,<<23>>,<<"\"">>,<<"-">>]},

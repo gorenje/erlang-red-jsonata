@@ -61,12 +61,12 @@ handle_local_function(jsonata_priv_dir, [Args]) when is_atom(Args) ->
     code:priv_dir(Args);
 handle_local_function(jsonata_priv_dir, [Args]) when is_list(Args) ->
     code:priv_dir(list_to_atom(Args));
-
+%%
 handle_local_function(jsonata_length, [Args]) when is_binary(Args) ->
     erlang:byte_size(Args);
 handle_local_function(jsonata_length, [Args]) ->
     erlang:length(Args);
-
+%% --> $keys
 handle_local_function(jsonata_keys, Args) ->
     case Args of
         [Lst] when is_list(Lst) ->
@@ -77,6 +77,7 @@ handle_local_function(jsonata_keys, Args) ->
         [Map] when is_map(Map) ->
             [any_to_binary(K) || K <- maps:keys(Map)]
     end;
+%% --> $split
 handle_local_function(split, Args) ->
     case Args of
         [Str] ->
@@ -102,7 +103,7 @@ handle_local_function(any_to_list, [Arg]) when is_atom(Arg) ->
     atom_to_list(Arg);
 handle_local_function(any_to_list, [Arg]) ->
     Arg;
-%%
+%% --> $toString
 handle_local_function(to_string, [Arg]) when is_binary(Arg) -> Arg;
 handle_local_function(to_string, [Arg]) when is_list(Arg) ->
     list_to_binary(Arg);
@@ -116,7 +117,8 @@ handle_local_function(to_string, [Arg]) ->
     list_to_binary(io_lib:format("~p", [Arg]));
 handle_local_function(to_string, Arg) when is_list(Arg) ->
     list_to_binary([any_to_list(A) || A <- Arg]);
-%%
+
+%% --> $now()
 handle_local_function(jsonata_now, []) ->
     iso_8601_datestamp(erlang:timestamp());
 handle_local_function(
@@ -146,6 +148,22 @@ handle_local_function(ered_millis, [Arg]) ->
     %% Arg contains the milliseconds for this evaluation, just
     %% return it - done.
     Arg;
+
+%% --> $formatBase
+handle_local_function(
+  jsonata_formatbase,
+  [Val, Base]
+) when is_integer(Val), is_integer(Base) ->
+    string:lowercase(integer_to_binary(Val,Base));
+
+handle_local_function(
+  jsonata_formatbase,
+  [Val, Base]
+) when is_float(Val), is_integer(Base) ->
+  V = element(1, string:to_integer(lists:nth(1, io_lib:format("~p", [Val])))),
+  handle_local_function(jsonata_formatbase, [V, Base]);
+
+%% -------> fall through to unsupported
 handle_local_function(FunctionName, Args) ->
     erlang:error(jsonata_unsupported, [{FunctionName, Args}]).
 

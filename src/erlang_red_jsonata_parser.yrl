@@ -457,6 +457,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         keys ->
             list_to_binary(io_lib:format("jsonata_keys(~s)",
                                          [args_to_string(Expr)]));
+        formatBase ->
+            list_to_binary(io_lib:format("jsonata_formatbase(~s)",
+                                         [args_to_string(Expr)]));
         sort ->
             list_to_binary(io_lib:format("lists:sort(~s)",
                                          [args_to_string(Expr)]));
