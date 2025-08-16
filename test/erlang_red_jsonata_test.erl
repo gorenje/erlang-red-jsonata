@@ -2,6 +2,97 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+pad_test() ->
+    ?assertEqual(
+        {ok, <<"abb">>},
+        erlang_red_jsonata:execute(
+            "$pad(\"a\", 3, \"b\")",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"bba">>},
+        erlang_red_jsonata:execute(
+            "$pad(\"a\", -3, \"b\")",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"abbbb">>},
+        erlang_red_jsonata:execute(
+            "$pad(\"a\", 5, \"b\")",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"bbbba">>},
+        erlang_red_jsonata:execute(
+            "$pad(\"a\", -5, \"b\")",
+            #{}
+        )
+    ).
+
+substring_test() ->
+    ?assertEqual(
+        {ok, <<"abcd">>},
+        erlang_red_jsonata:execute(
+            "$substring(\"abcd1234\", 0, 4 )",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"cd1234">>},
+        erlang_red_jsonata:execute(
+            "$substring(\"abcd1234\", 2)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"34">>},
+        erlang_red_jsonata:execute(
+            "$substring(\"abcd1234\", -2)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"cd1234">>},
+        erlang_red_jsonata:execute(
+            "$substring(\"abcd1234\", 2, 6)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"34">>},
+        erlang_red_jsonata:execute(
+            "$substring(\"abcd1234\", -2, 2)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"1234">>},
+        erlang_red_jsonata:execute(
+            "$substring(\"abcd1234\", -4, 4)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"cd12">>},
+        erlang_red_jsonata:execute(
+            "$substring(\"abcd1234\", 2, 4)",
+            #{}
+        )
+    ),
+
+    {ok, GeneratedId} =
+        erlang_red_jsonata:execute(
+            "$substring( $pad( $formatBase($random() * 100000, 16), 4, '0'),0,4) &\n"
+            "           $substring( $pad( $formatBase($random() * 100000, 16), 4, '0'),0,4) &\n"
+            "           $substring( $pad( $formatBase($random() * 100000, 16), 4, '0'),0,4) &\n"
+            "           $substring( $pad( $formatBase($random() * 100000, 16), 4, '0'),0,4)",
+            #{}
+        ),
+    ?assertEqual(16, length(GeneratedId)).
+
 formatbase_functionality_test() ->
     ?assertEqual(
         {ok, <<"feedbabe">>},
@@ -9,34 +100,39 @@ formatbase_functionality_test() ->
             "$formatBase($$.payload, 16)",
             #{<<"payload">> => 4276992702}
         )
-      ),
+    ),
     ?assertEqual(
         ok,
-       element(1,
-        erlang_red_jsonata:execute(
-            "$formatBase($random() * 100000, 16)",
-            #{<<"payload">> => 4276992702}
-        ))
-      ).
-
+        element(
+            1,
+            erlang_red_jsonata:execute(
+                "$formatBase($random() * 100000, 16)",
+                #{<<"payload">> => 4276992702}
+            )
+        )
+    ).
 
 append_functionality_test() ->
     ?assertEqual(
-        {ok, [<<1,2,3,4,5>>,<<23>>,<<"\"">>,<<"-">>]},
+        {ok, [<<1, 2, 3, 4, 5>>, <<23>>, <<"\"">>, <<"-">>]},
         erlang_red_jsonata:execute(
             "$append([$$.payload], $$.array)",
-            #{<<"payload">> => <<1,2,3,4,5>>,
-              <<"array">> => [<<23>>,<<34>>,<<45>>] }
+            #{
+                <<"payload">> => <<1, 2, 3, 4, 5>>,
+                <<"array">> => [<<23>>, <<34>>, <<45>>]
+            }
         )
-      ),
+    ),
     ?assertEqual(
-        {ok, [<<1,2,3,4,5>>,<<23>>,[<<"\"">>],<<"-">>]},
+        {ok, [<<1, 2, 3, 4, 5>>, <<23>>, [<<"\"">>], <<"-">>]},
         erlang_red_jsonata:execute(
             "$append([$$.payload], $$.array)",
-            #{<<"payload">> => <<1,2,3,4,5>>,
-              <<"array">> => [<<23>>,[<<34>>],<<45>>] }
+            #{
+                <<"payload">> => <<1, 2, 3, 4, 5>>,
+                <<"array">> => [<<23>>, [<<34>>], <<45>>]
+            }
         )
-      ).
+    ).
 
 distinct_elements_in_list_test() ->
     ?assertEqual(
@@ -45,16 +141,23 @@ distinct_elements_in_list_test() ->
             "$distinct($$.payload)",
             #{<<"payload">> => [1, 2, 3, 4]}
         )
-      ),
+    ),
     ?assertEqual(
         {ok, ["9f07e3399b87b739"]},
         erlang_red_jsonata:execute(
             "$distinct($$.payload)",
-          #{<<"payload">> => ["9f07e3399b87b739","9f07e3399b87b739",
-                              "9f07e3399b87b739","9f07e3399b87b739",
-                              "9f07e3399b87b739","9f07e3399b87b739"]}
+            #{
+                <<"payload">> => [
+                    "9f07e3399b87b739",
+                    "9f07e3399b87b739",
+                    "9f07e3399b87b739",
+                    "9f07e3399b87b739",
+                    "9f07e3399b87b739",
+                    "9f07e3399b87b739"
+                ]
+            }
         )
-      ).
+    ).
 
 count_and_length_test() ->
     ?assertEqual(
@@ -70,37 +173,35 @@ count_and_length_test() ->
             "$count(msg.payload)",
             #{<<"payload">> => [1, 2, 3, 4]}
         )
-      ),
+    ),
     ?assertEqual(
         {ok, 4},
         erlang_red_jsonata:execute(
             "$length(msg.payload)",
             #{<<"payload">> => <<1, 2, 3, 4>>}
         )
-      ),
+    ),
     ?assertEqual(
         {ok, 4},
         erlang_red_jsonata:execute(
             "$length(msg.payload)",
             #{<<"payload">> => "1234"}
         )
-      ),
+    ),
     ?assertEqual(
         {ok, 4},
         erlang_red_jsonata:execute(
             "$length(msg.payload)",
-            #{<<"payload">> => [1,2,3,4]}
+            #{<<"payload">> => [1, 2, 3, 4]}
         )
-      ),
+    ),
     ?assertEqual(
         {ok, 8},
         erlang_red_jsonata:execute(
             "$length(\"1\" & \"d\" & 12 & $$.payload)",
-            #{<<"payload">> => [1,2,3,4]}
+            #{<<"payload">> => [1, 2, 3, 4]}
         )
-      ).
-
-
+    ).
 
 parse_error_test() ->
     ?assertEqual(
@@ -722,45 +823,63 @@ split_string_test() ->
             "$split($$.payload,\",\")",
             #{<<"payload">> => "one,two,three,four"}
         )
-      ),
+    ),
     ?assertEqual(
         {ok, "71"},
         erlang_red_jsonata:execute(
             "$split($$.payload,\"/\")[-1]",
-            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+            #{
+                <<"payload">> =>
+                    "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"
+            }
         )
-      ),
+    ),
     ?assertEqual(
         {ok, "95044"},
         erlang_red_jsonata:execute(
             "$split($$.payload,\"/\")[-2]",
-            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+            #{
+                <<"payload">> =>
+                    "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"
+            }
         )
-      ),
+    ),
     ?assertEqual(
         {ok, "https:"},
         erlang_red_jsonata:execute(
             "$split($$.payload,\"/\")[0]",
-            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+            #{
+                <<"payload">> =>
+                    "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"
+            }
         )
-      ),
+    ),
     ?assertEqual(
         {ok, "t"},
         erlang_red_jsonata:execute(
             "$split($$.payload,\"/\")[3]",
-            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+            #{
+                <<"payload">> =>
+                    "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"
+            }
         )
-      ),
+    ),
     ?assertEqual(
-        {ok, ["t","71","95044",
-              "should-debug-nodes-be-capable-of-passing-the-message-forwards"]},
+        {ok, [
+            "t",
+            "71",
+            "95044",
+            "should-debug-nodes-be-capable-of-passing-the-message-forwards"
+        ]},
         erlang_red_jsonata:execute(
-            "[$split($$.payload,\"/\")[3],$split($$.payload,\"/\")[-1],
-                 $split($$.payload,\"/\")[-2],$split($$.payload,\"/\")[-3]]",
-            #{<<"payload">> => "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"}
+            "[$split($$.payload,\"/\")[3],$split($$.payload,\"/\")[-1],\n"
+            "                 $split($$.payload,\"/\")[-2],$split($$.payload,\"/\")[-3]]",
+            #{
+                <<"payload">> =>
+                    "https://discourse.nodered.org/t/should-debug-nodes-be-capable-of-passing-the-message-forwards/95044/71"
+            }
         )
-      ).
-
+    ).
 
 keys_of_single_maps_test() ->
     ?assertEqual(
@@ -805,101 +924,99 @@ random_value_test() ->
 modulo_test() ->
     ?assertEqual(
         {ok, 9},
-       erlang_red_jsonata:execute(
-         "($$.payload + 1 + 2 + 4) % $$.ten",
-         #{ <<"payload">> => 12, <<"ten">> => 10 }
+        erlang_red_jsonata:execute(
+            "($$.payload + 1 + 2 + 4) % $$.ten",
+            #{<<"payload">> => 12, <<"ten">> => 10}
         )
-      ),
+    ),
     ?assertEqual(
         {ok, 2},
-       erlang_red_jsonata:execute(
-         "($$.currentframe + 1 + 3) % $$.totalframes",
-         #{ <<"currentframe">> => 12, <<"totalframes">> => 7 }
+        erlang_red_jsonata:execute(
+            "($$.currentframe + 1 + 3) % $$.totalframes",
+            #{<<"currentframe">> => 12, <<"totalframes">> => 7}
         )
-      ).
-
+    ).
 
 privdir_test() ->
     %% without an argument, it's assumed to be erlang_red - the application
     %% name.
     ?assertEqual(
-        {ok, {error,bad_name}},
-       erlang_red_jsonata:execute(
-         "$privdir()",
-         #{}
+        {ok, {error, bad_name}},
+        erlang_red_jsonata:execute(
+            "$privdir()",
+            #{}
         )
     ),
     ?assertEqual(
-        {ok, {error,bad_name}},
-       erlang_red_jsonata:execute(
-         "$privdir(\"string\")",
-         #{}
+        {ok, {error, bad_name}},
+        erlang_red_jsonata:execute(
+            "$privdir(\"string\")",
+            #{}
         )
     ),
     %% this is something like:
     %%    "/code/_build/test/lib/erlang_red_jsonata/priv"
     %% i.e. specific to the location of this code base
     {ok, PrivDir} = erlang_red_jsonata:execute(
-                      "$privdir(erlang_red_jsonata)",
-                      #{}
-                     ),
+        "$privdir(erlang_red_jsonata)",
+        #{}
+    ),
 
     [<<"priv">>, <<"erlang_red_jsonata">> | _Re] =
         lists:reverse(re:split(PrivDir, element(2, re:compile("/")))),
 
-
     %% strings are also valid. Also PrivDir should be the same in the following
     %% two calls, so use the same variable name to ensure that.
-    {ok, PrivDir} =  erlang_red_jsonata:execute(
-                       "$privdir(\"erlang_red_jsonata\")",
-                       #{}
-                      ),
-
+    {ok, PrivDir} = erlang_red_jsonata:execute(
+        "$privdir(\"erlang_red_jsonata\")",
+        #{}
+    ),
 
     %% also allow variables from the message to be used as application name
     ?assertEqual(
         {ok, PrivDir},
-       erlang_red_jsonata:execute(
-         "$privdir($$.appname)",
-         #{ <<"appname">> => <<"erlang_red_jsonata">>}
+        erlang_red_jsonata:execute(
+            "$privdir($$.appname)",
+            #{<<"appname">> => <<"erlang_red_jsonata">>}
         )
-      ),
+    ),
 
     %% to a depth of 2
     ?assertEqual(
         {ok, PrivDir},
-       erlang_red_jsonata:execute(
-         "$privdir($$.app.name)",
-         #{ <<"app">> => #{ <<"name">> => <<"erlang_red_jsonata">>}}
+        erlang_red_jsonata:execute(
+            "$privdir($$.app.name)",
+            #{<<"app">> => #{<<"name">> => <<"erlang_red_jsonata">>}}
         )
-      ),
+    ),
 
     ?assertEqual(
         {ok, PrivDir},
-       erlang_red_jsonata:execute(
-         "$privdir(\"erlang_\" & \"red_\" & \"jsonata\")",
-         #{ <<"app">> => #{ <<"name">> => <<"erlang_red_jsonata">>}}
+        erlang_red_jsonata:execute(
+            "$privdir(\"erlang_\" & \"red_\" & \"jsonata\")",
+            #{<<"app">> => #{<<"name">> => <<"erlang_red_jsonata">>}}
         )
-      ).
+    ).
 
 exceptions_and_errors_are_captured_test() ->
     {exception, {error, {badkey, <<"payload">>}, _Stacktrace}} =
         erlang_red_jsonata:execute(
-          "$$.payload",
-          #{}
-         ),
-    {error, {error, {1,erlang_red_jsonata_parser,
-                     ["syntax error before: ",[]]}}} =
+            "$$.payload",
+            #{}
+        ),
+    {error,
+        {error, {1, erlang_red_jsonata_parser, ["syntax error before: ", []]}}} =
         erlang_red_jsonata:execute(
-          "$$.payload + ",
-          #{<<"payload">> => ""}
-         ),
-    {error, {error, {1,erlang_red_jsonata_parser,
-                                     ["syntax error before: ","'&'"]}}} =
+            "$$.payload + ",
+            #{<<"payload">> => ""}
+        ),
+    {error,
+        {error,
+            {1, erlang_red_jsonata_parser, ["syntax error before: ", "'&'"]}}} =
         erlang_red_jsonata:execute(
-          "$$.payload + & \"\" ",
-          #{<<"payload">> => "a"}
-         ).
+            "$$.payload + & \"\" ",
+            #{<<"payload">> => "a"}
+        ).
 
 keys_of_list_of_maps_test() ->
     ?assertEqual(

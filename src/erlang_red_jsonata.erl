@@ -13,12 +13,13 @@
 %% in the presence of the Msg object.
 %%
 -spec execute(
-     JSONata :: string(),
-     Msg :: map()
-) -> {ok, ReturnValue :: any() }
-     | {error, ErrMsg :: string() }
-     | {unsupported, Description :: string() }
-     | {exception, { Error :: atom(), Message :: tuple(), Stack :: [tuple()] }}.
+    JSONata :: string(),
+    Msg :: map()
+) ->
+    {ok, ReturnValue :: any()}
+    | {error, ErrMsg :: string()}
+    | {unsupported, Description :: string()}
+    | {exception, {Error :: atom(), Message :: tuple(), Stack :: [tuple()]}}.
 execute(JSONata, Msg) when is_binary(JSONata) ->
     execute(binary_to_list(JSONata), Msg);
 execute(JSONata, Msg) ->
@@ -46,9 +47,9 @@ execute(JSONata, Msg) ->
                     io_lib:format(
                         "jsonata unsupported function: ~p", element(3, H)
                     )
-                 )};
+                )};
         E:M:S ->
-            {exception, {E,M,S}}
+            {exception, {E, M, S}}
     end.
 
 %%
@@ -117,7 +118,6 @@ handle_local_function(to_string, [Arg]) ->
     list_to_binary(io_lib:format("~p", [Arg]));
 handle_local_function(to_string, Arg) when is_list(Arg) ->
     list_to_binary([any_to_list(A) || A <- Arg]);
-
 %% --> $now()
 handle_local_function(jsonata_now, []) ->
     iso_8601_datestamp(erlang:timestamp());
@@ -148,21 +148,93 @@ handle_local_function(ered_millis, [Arg]) ->
     %% Arg contains the milliseconds for this evaluation, just
     %% return it - done.
     Arg;
-
 %% --> $formatBase
 handle_local_function(
-  jsonata_formatbase,
-  [Val, Base]
+    jsonata_formatbase,
+    [Val, Base]
 ) when is_integer(Val), is_integer(Base) ->
-    string:lowercase(integer_to_binary(Val,Base));
-
+    string:lowercase(integer_to_binary(Val, Base));
 handle_local_function(
-  jsonata_formatbase,
-  [Val, Base]
+    jsonata_formatbase,
+    [Val, Base]
 ) when is_float(Val), is_integer(Base) ->
-  V = element(1, string:to_integer(lists:nth(1, io_lib:format("~p", [Val])))),
-  handle_local_function(jsonata_formatbase, [V, Base]);
-
+    V = element(1, string:to_integer(lists:nth(1, io_lib:format("~p", [Val])))),
+    handle_local_function(jsonata_formatbase, [V, Base]);
+%% ---> $pad(...)
+handle_local_function(
+    jsonata_pad,
+    [Str, Length]
+) when
+    is_binary(Str), is_integer(Length), Length < 0;
+    is_list(Str), is_integer(Length), Length < 0
+->
+    list_to_binary(string:pad(Str, Length, leading, " "));
+handle_local_function(
+    jsonata_pad,
+    [Str, Length]
+) when
+    is_binary(Str), is_integer(Length), Length > 0;
+    is_list(Str), is_integer(Length), Length > 0
+->
+    list_to_binary(string:pad(Str, Length, trailing, " "));
+handle_local_function(
+    jsonata_pad,
+    [Str, Length, Char]
+) when
+    is_binary(Str), is_integer(Length), is_list(Char), Length < 0;
+    is_list(Str), is_integer(Length), is_binary(Char), Length < 0;
+    is_binary(Str), is_integer(Length), is_binary(Char), Length < 0;
+    is_list(Str), is_integer(Length), is_list(Char), Length < 0
+->
+    list_to_binary(string:pad(Str, Length * -1, leading, Char));
+handle_local_function(
+    jsonata_pad,
+    [Str, Length, Char]
+) when
+    is_binary(Str), is_integer(Length), is_binary(Char), Length > 0;
+    is_list(Str), is_integer(Length), is_list(Char), Length > 0;
+    is_binary(Str), is_integer(Length), is_list(Char), Length > 0;
+    is_list(Str), is_integer(Length), is_binary(Char), Length > 0
+->
+    list_to_binary(string:pad(Str, Length, trailing, Char));
+%% ---> $substring(...)
+handle_local_function(
+    jsonata_substring,
+    [Str, Start]
+) when is_binary(Str), is_integer(Start) ->
+    handle_local_function(jsonata_substring, [binary_to_list(Str), Start]);
+handle_local_function(
+    jsonata_substring,
+    [Str, Start]
+) when is_list(Str), is_integer(Start) ->
+    handle_local_function(jsonata_substring, [Str, Start, length(Str)]);
+handle_local_function(
+    jsonata_substring,
+    [Str, Start, Length]
+) when
+    is_list(Str),
+    is_integer(Start),
+    is_integer(Length),
+    Length > 0,
+    Start >= 0
+->
+    list_to_binary(string:slice(Str, Start, Length));
+handle_local_function(
+    jsonata_substring,
+    [Str, Start, Length]
+) when
+    is_list(Str),
+    is_integer(Start),
+    is_integer(Length),
+    Length > 0,
+    Start < 0
+->
+    list_to_binary(string:slice(Str, length(Str) + Start, Length));
+handle_local_function(
+    jsonata_substring,
+    [Str, Start, Len]
+) when is_binary(Str), is_integer(Start), is_integer(Len) ->
+    handle_local_function(jsonata_substring, [binary_to_list(Str), Start, Len]);
 %% -------> fall through to unsupported
 handle_local_function(FunctionName, Args) ->
     erlang:error(jsonata_unsupported, [{FunctionName, Args}]).

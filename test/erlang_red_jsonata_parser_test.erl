@@ -42,10 +42,17 @@ foreach_parser_test_() ->
         end."
       },
       {
-       unsupported_functions,
+       supported_functions,
        "$pad()",
        "fun (Msg) ->
-             unsupported_pad()
+             jsonata_pad()
+        end."
+      },
+      {
+       unsupported_functions,
+       "$clone()",
+       "fun (Msg) ->
+             unsupported_clone()
         end."
       },
       {

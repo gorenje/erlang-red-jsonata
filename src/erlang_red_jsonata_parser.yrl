@@ -152,6 +152,8 @@ key_value_pair ->
 key_value_pairs -> key_value_pair : ['$1'].
 key_value_pairs -> key_value_pair ',' key_value_pairs : ['$1' | '$3'].
 
+args -> '-' arg : [ convert_to_negative('$2') ].
+args -> '-' arg ',' args : [ convert_to_negative('$2') | '$4'].
 args -> arg : [ '$1' ].
 args -> arg ',' args : [ '$1' | '$3' ].
 
@@ -228,6 +230,9 @@ comments -> comment comments.
 %%
 %%
 Erlang code.
+
+convert_to_negative(Str) ->
+    io_lib:format("-~s", [Str]).
 
 function_call_with_array(FunCall, positive, {int, _L, V}) ->
     io_lib:format("lists:nth(~b, ~s)", [V+1, FunCall]);
@@ -459,6 +464,12 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
                                          [args_to_string(Expr)]));
         formatBase ->
             list_to_binary(io_lib:format("jsonata_formatbase(~s)",
+                                         [args_to_string(Expr)]));
+        pad ->
+            list_to_binary(io_lib:format("jsonata_pad(~s)",
+                                         [args_to_string(Expr)]));
+        substring ->
+            list_to_binary(io_lib:format("jsonata_substring(~s)",
                                          [args_to_string(Expr)]));
         sort ->
             list_to_binary(io_lib:format("lists:sort(~s)",
