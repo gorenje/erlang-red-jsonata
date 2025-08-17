@@ -273,7 +273,7 @@ to_map_get([{dontquote, _LineNo, V}|T], LastMap) ->
     to_map_get(T, io_lib:format("maps:get(~s, ~s)", [V, LastMap])).
 
 
-just_name({Type, LineNo, Name} = Whole)
+just_name({Type, LineNo, _Name} = Whole)
   when Type =:= sqstring; Type =:= string
 ->
     {dontquote, LineNo, replace_quotes(Whole)};
