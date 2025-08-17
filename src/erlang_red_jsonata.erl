@@ -3,7 +3,8 @@
 -export([
     evaluate_erlang/1,
     execute/2,
-    jsonata_to_erlang/1
+    jsonata_to_erlang/1,
+    compile_to_function/1
 ]).
 
 %%
@@ -51,6 +52,40 @@ execute(JSONata, Msg) ->
         E:M:S ->
             {exception, {E, M, S}}
     end.
+
+%%
+%% Pre-compile the JSONata to a BEAM function to be used later, multiple times
+%% as messages come in.
+-spec compile_to_function(
+    JSONata :: string()
+) ->
+    {ok, Function :: fun()}
+    | {error, ErrMsg :: string()}
+    | {exception, {Error :: atom(), Message :: tuple(), Stack :: [tuple()]}}.
+compile_to_function(JSONata) when is_binary(JSONata) ->
+    compile_to_function(binary_to_list(JSONata));
+compile_to_function(JSONata) ->
+    try
+        case jsonata_to_erlang(JSONata) of
+            {ok, ErlangCode} ->
+                case evaluate_erlang(binary_to_list(ErlangCode)) of
+                    {ok, Func} ->
+                        {ok, Func};
+                    Error ->
+                        ErrMsg = io_lib:format(
+                            "Stanza: {{{ ~p }}} Error: ~p",
+                            [ErlangCode, Error]
+                        ),
+                        {error, ErrMsg}
+                end;
+            Error ->
+                {error, Error}
+        end
+    catch
+        E:M:S ->
+            {exception, {E, M, S}}
+    end.
+
 
 %%
 %% Inspired by this blog post:

@@ -2,6 +2,33 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+compile_to_function_with_string_test() ->
+    {ok, Func} = erlang_red_jsonata:compile_to_function("$$.payload"),
+    ?assertEqual(5, Func(#{ <<"payload">> => 5})),
+    ?assertEqual(6, Func(#{ <<"payload">> => 6})),
+    ?assertEqual(7, Func(#{ <<"payload">> => 7})),
+    ?assertEqual(8, Func(#{ <<"payload">> => 8})),
+    ?assertEqual(9, Func(#{ <<"payload">> => 9})),
+    ?assertEqual(10, Func(#{ <<"payload">> => 10})),
+    ?assertEqual(11, Func(#{ <<"payload">> => 11})).
+
+compile_to_function_with_binary_test() ->
+    {ok, Func} = erlang_red_jsonata:compile_to_function(<<"
+     $string(
+         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &
+         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &
+         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &
+         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4)
+      )
+    ">>),
+    ?assertEqual(<<"7a127a127a127a12">>, Func(#{ <<"random">> => 5})),
+    ?assertEqual(<<"927c927c927c927c">>, Func(#{ <<"random">> => 6})),
+    ?assertEqual(<<"aae6aae6aae6aae6">>, Func(#{ <<"random">> => 7})),
+    ?assertEqual(<<"c350c350c350c350">>, Func(#{ <<"random">> => 8})),
+    ?assertEqual(<<"dbbadbbadbbadbba">>, Func(#{ <<"random">> => 9})),
+    ?assertEqual(<<"f424f424f424f424">>, Func(#{ <<"random">> => 10})),
+    ?assertEqual(<<"10c810c810c810c8">>, Func(#{ <<"random">> => 11})).
+
 pad_test() ->
     ?assertEqual(
         {ok, <<"abb">>},
