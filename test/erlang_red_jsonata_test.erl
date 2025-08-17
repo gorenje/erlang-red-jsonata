@@ -323,7 +323,7 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{<<"key">> => "hello world"}},
+        {ok, #{key => "hello world"}},
         erlang_red_jsonata:execute(
             "{ 'key': 'hello world' }",
             #{}
@@ -339,7 +339,7 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{<<"integer">> => 4, <<"float">> => 12.32}},
+        {ok, #{integer => 4, float => 12.32}},
         erlang_red_jsonata:execute(
             "{ 'integer': 4, 'float': 12.32 }",
             #{}
@@ -347,7 +347,7 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{<<"key">> => 4, <<"key2">> => "value two"}},
+        {ok, #{<<"key">> => 4, key2 => "value two"}},
         erlang_red_jsonata:execute(
             "{ \"key\": $$.payload, 'key2': 'value two' }",
             #{<<"payload">> => 4}
@@ -355,9 +355,11 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{<<"Location">> => 4, <<"CapitalKey">> => "value two" }},
+        {ok, #{<<"Location">> => 4, 'CapitalKey' => "value two",
+                                   <<"CapitalKey">> => "Binary Key" }},
         erlang_red_jsonata:execute(
-            "{ \"Location\": $$.payload, 'CapitalKey': $$.key2 }",
+            "{ \"Location\": $$.payload, 'CapitalKey': $$.key2,
+                    \"CapitalKey\": \"Binary Key\" }",
             #{ <<"payload">> => 4, <<"key2">> => "value two" }
         )
     ),
@@ -743,6 +745,21 @@ function_sum_with_arrays_of_objects_test() ->
                     #{<<"col">> => #{<<"value">> => 2}},
                     #{<<"col">> => #{<<"value">> => 2}},
                     #{<<"col">> => #{<<"value">> => 3}}
+                ]
+            }
+        )
+    ).
+
+function_map_with_atom_key_test() ->
+    ?assertEqual(
+        {ok, 7},
+        erlang_red_jsonata:execute(
+            "$sum($map($$.payload, function ($v) { $v.'_msgid'.\"value\" } ))",
+            #{
+                <<"payload">> => [
+                    #{'_msgid' => #{<<"value">> => 2}},
+                    #{'_msgid' => #{<<"value">> => 2}},
+                    #{'_msgid' => #{<<"value">> => 3}}
                 ]
             }
         )

@@ -21,6 +21,30 @@
 foreach_parser_test_() ->
     Tests = [
       {
+       function_uses_atoms,
+       "$map( $$.payload, function ($v) { $v.'_msgid' })",
+       "fun (Msg) ->
+            lists:map(fun(V) -> maps:get('_msgid', V) end,
+                                maps:get(<<\"payload\">>, Msg))
+        end."
+      },
+      {
+       function_uses_strings,
+       "$map( $$.payload, function ($v) { $v.\"_msgid\" })",
+       "fun (Msg) ->
+               lists:map(fun(V) -> maps:get(<<\"_msgid\">>, V) end,
+                                 maps:get(<<\"payload\">>, Msg))
+        end."
+      },
+      {
+       function_uses_neither_strings_nor_atoms,
+       "$map( $$.payload, function ($v) { $v._msgid })",
+       "fun (Msg) ->
+              lists:map(fun(V) -> maps:get(<<\"_msgid\">>, V) end,
+                         maps:get(<<\"payload\">>, Msg))
+        end."
+      },
+      {
        map_one_key_and_value_test,
        "{ \"key\": $$.payload.key2 }",
        "fun (Msg) -> #{
@@ -374,10 +398,10 @@ foreach_parser_test_() ->
          end."
       },
       {
-        capital_letter_key_names_to_atoms,
+        capital_letter_key_names_in_quotes,
         "{ 'Location' : 'value', \"Location\": \"VLAUE\" }",
         "fun (Msg) ->
-           #{ <<\"Location\">> => \"value\", <<\"Location\">> => \"VLAUE\" }
+           #{ 'Location' => \"value\", <<\"Location\">> => \"VLAUE\" }
         end."
       },
       {

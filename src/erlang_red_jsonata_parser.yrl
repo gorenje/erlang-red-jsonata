@@ -140,8 +140,8 @@ function_definition -> funct_def '(' args ')' '{' expr '}' :
 num_function_call -> funct '(' args ')' : {funct, convert_funct('$1', '$3')}.
 num_function_call -> funct '(' ')' : {funct, convert_funct('$1', {no_args})}.
 
-key_name -> string : remove_quotes('$1').
-key_name -> sqstring : remove_quotes('$1').
+key_name -> string : replace_quotes('$1').
+key_name -> sqstring : replace_quotes('$1').
 key_name -> name : name_to_binary('$1').
 
 key_value_pair -> key_name ':' expr : {'$1', '$3'}.
@@ -202,6 +202,8 @@ arith_expr -> num arith_operators num : {op, '$2', '$1', '$3' }.
 arith_expr -> '(' arith_expr ')' : "(" ++ convert_arith_expr('$2') ++ ")".
 
 dot_name -> '.' name : just_name('$2').
+dot_name -> '.' sqstring : just_name('$2').
+dot_name -> '.' string : just_name('$2').
 
 dot_names -> dot_name : ['$1'].
 dot_names -> dot_name dot_names : ['$1' | '$2'].
@@ -262,11 +264,19 @@ to_map_get_with_index(Ary, {int, _LineNo, V}) ->
 
 to_map_get([{name, _LineNo, V}|T]) ->
     to_map_get(T, io_lib:format("maps:get(<<\"~s\">>, Msg)", [V])).
+%%
 to_map_get([], LastMap) ->
     LastMap;
 to_map_get([{name, _LineNo, V}|T], LastMap) ->
-    to_map_get(T, io_lib:format("maps:get(<<\"~s\">>, ~s)", [V, LastMap])).
+    to_map_get(T, io_lib:format("maps:get(<<\"~s\">>, ~s)", [V, LastMap]));
+to_map_get([{dontquote, _LineNo, V}|T], LastMap) ->
+    to_map_get(T, io_lib:format("maps:get(~s, ~s)", [V, LastMap])).
 
+
+just_name({Type, LineNo, Name} = Whole)
+  when Type =:= sqstring; Type =:= string
+->
+    {dontquote, LineNo, replace_quotes(Whole)};
 just_name({name, _LineNo, _Name} = Whole) ->
     Whole.
 
@@ -569,15 +579,15 @@ name_to_binary({name, _LineNo, V}) ->
     io_lib:format("<<\"~s\">>", [V]).
 %%
 %%
-remove_quotes({string, _LineNo, [$"|Str]}) ->
+replace_quotes({string, _LineNo, [$"|Str]}) ->
     case lists:reverse(Str) of
         [$"|StrD] ->
             io_lib:format("<<\"~s\">>", [lists:reverse(StrD)])
     end;
-remove_quotes({sqstring, _LineNo, [$'|Str]}) ->
+replace_quotes({sqstring, _LineNo, [$'|Str]}) ->
     case lists:reverse(Str) of
         [$'|StrD] ->
-            io_lib:format("<<\"~s\">>", [lists:reverse(StrD)])
+            io_lib:format("'~s'", [lists:reverse(StrD)])
     end.
 %%
 %%
