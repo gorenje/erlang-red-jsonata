@@ -415,7 +415,7 @@ foreach_parser_test_() ->
         random_function,
         "$random()",
         "fun (Msg) ->
-            random:uniform()
+            rand:uniform()
         end."
       },
       {
