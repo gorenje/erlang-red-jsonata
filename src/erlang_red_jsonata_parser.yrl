@@ -563,7 +563,7 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
             list_to_binary(io_lib:format(element(1,StringArgTuple),
                                          element(2,StringArgTuple)));
         random ->
-            list_to_binary(io_lib:format("random:uniform()",[]));
+            list_to_binary(io_lib:format("rand:uniform()",[]));
         Unknown ->
             list_to_binary(io_lib:format("unsupported_~s(~s)",
                                          [Unknown, args_to_string(Expr)]))
