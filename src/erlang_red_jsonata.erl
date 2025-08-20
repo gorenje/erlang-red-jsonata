@@ -86,10 +86,24 @@ compile_to_function(JSONata) ->
             {exception, {E, M, S}}
     end.
 
-
 %%
 %% Inspired by this blog post:
 %% https://grantwinney.com/how-to-evaluate-a-string-of-code-in-erlang-at-runtime/
+%%
+%%
+handle_local_function(any_to_list, [Arg]) when is_float(Arg) ->
+    float_to_list(Arg, [short]);
+handle_local_function(any_to_list, [Arg]) when is_integer(Arg) ->
+    integer_to_list(Arg);
+handle_local_function(any_to_list, [Arg]) when is_binary(Arg) ->
+    binary_to_list(Arg);
+handle_local_function(any_to_list, [Arg]) when is_atom(Arg) ->
+    atom_to_list(Arg);
+handle_local_function(any_to_list, [Arg]) ->
+    Arg;
+%%
+handle_local_function(jsonata_to_list, Arg) ->
+    handle_local_function(any_to_list, Arg);
 %%
 handle_local_function(jsonata_priv_dir, [Args]) when is_binary(Args) ->
     code:priv_dir(binary_to_atom(Args));
@@ -114,7 +128,7 @@ handle_local_function(jsonata_keys, Args) ->
             [any_to_binary(K) || K <- maps:keys(Map)]
     end;
 %% --> $split
-handle_local_function(split, Args) ->
+handle_local_function(jsonata_split, Args) ->
     case Args of
         [Str] ->
             [<<>> | T] = lists:reverse(re:split(Str, "")),
@@ -128,30 +142,19 @@ handle_local_function(split, Args) ->
             All = string:split(Str, Pat, all),
             lists:sublist(All, Lmt)
     end;
-%%
-handle_local_function(any_to_list, [Arg]) when is_float(Arg) ->
-    float_to_list(Arg, [short]);
-handle_local_function(any_to_list, [Arg]) when is_integer(Arg) ->
-    integer_to_list(Arg);
-handle_local_function(any_to_list, [Arg]) when is_binary(Arg) ->
-    binary_to_list(Arg);
-handle_local_function(any_to_list, [Arg]) when is_atom(Arg) ->
-    atom_to_list(Arg);
-handle_local_function(any_to_list, [Arg]) ->
-    Arg;
 %% --> $toString
-handle_local_function(to_string, [Arg]) when is_binary(Arg) -> Arg;
-handle_local_function(to_string, [Arg]) when is_list(Arg) ->
+handle_local_function(jsonata_to_string, [Arg]) when is_binary(Arg) -> Arg;
+handle_local_function(jsonata_to_string, [Arg]) when is_list(Arg) ->
     list_to_binary(Arg);
-handle_local_function(to_string, [Arg]) when is_atom(Arg) ->
+handle_local_function(jsonata_to_string, [Arg]) when is_atom(Arg) ->
     atom_to_binary(Arg);
-handle_local_function(to_string, [Arg]) when is_integer(Arg) ->
+handle_local_function(jsonata_to_string, [Arg]) when is_integer(Arg) ->
     integer_to_binary(Arg);
-handle_local_function(to_string, [Arg]) when is_float(Arg) ->
+handle_local_function(jsonata_to_string, [Arg]) when is_float(Arg) ->
     list_to_binary(float_to_list(Arg, [short]));
-handle_local_function(to_string, [Arg]) ->
+handle_local_function(jsonata_to_string, [Arg]) ->
     list_to_binary(io_lib:format("~p", [Arg]));
-handle_local_function(to_string, Arg) when is_list(Arg) ->
+handle_local_function(jsonata_to_string, Arg) when is_list(Arg) ->
     list_to_binary([any_to_list(A) || A <- Arg]);
 %% --> $now()
 handle_local_function(jsonata_now, []) ->
@@ -179,7 +182,7 @@ handle_local_function(
     },
     iso_8601_datestamp(Ts);
 %%
-handle_local_function(ered_millis, [Arg]) ->
+handle_local_function(jsonata_millis, [Arg]) ->
     %% Arg contains the milliseconds for this evaluation, just
     %% return it - done.
     Arg;
@@ -274,6 +277,8 @@ handle_local_function(
 handle_local_function(FunctionName, Args) ->
     erlang:error(jsonata_unsupported, [{FunctionName, Args}]).
 
+%%
+%%
 evaluate_erlang(Expression) ->
     case erl_scan:string(Expression) of
         {ok, Tokens, _} ->

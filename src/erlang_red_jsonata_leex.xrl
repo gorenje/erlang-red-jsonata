@@ -171,6 +171,7 @@ in    : {token, {op_in,         TokenLine}}.
 \$toString    : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
 \$pauseMillis : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
 \$privdir     : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
+\$toList      : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
 
 %%
 %% function to define a user defined function

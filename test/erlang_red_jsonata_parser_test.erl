@@ -118,7 +118,7 @@ foreach_parser_test_() ->
        to_string_with_ampersand,
        "$toString($$.file.name & \"ddddd\")",
        "fun (Msg) ->
-             to_string(any_to_list(maps:get(<<\"name\">>,
+             jsonata_to_string(any_to_list(maps:get(<<\"name\">>,
                       maps:get(<<\"file\">>, Msg))) ++ \"ddddd\")
         end."
       },
@@ -199,8 +199,8 @@ foreach_parser_test_() ->
        "$toString($millis() & \"_\" & $replace($$.file.name, /[abcd ]/, \"_\"))",
        "fun (Msg) ->
               EREDMillis = erlang:system_time(millisecond),
-              to_string(any_to_list(ered_millis(EREDMillis)) ++ \"_\" ++
-              any_to_list(re:replace(maps:get(<<\"name\">>,
+              jsonata_to_string(any_to_list(jsonata_millis(EREDMillis)) ++
+              \"_\" ++ any_to_list(re:replace(maps:get(<<\"name\">>,
                              maps:get(<<\"file\">>, Msg)),
                              \"[abcd ]\", \"_\",
                        [dotall,dollar_endonly,caseless,global,{return,binary}])))
@@ -260,7 +260,7 @@ foreach_parser_test_() ->
         to_string_functionality,
         "$toString($$.payload)",
         "fun (Msg) ->
-           to_string(maps:get(<<\"payload\">>, Msg))
+           jsonata_to_string(maps:get(<<\"payload\">>, Msg))
         end."
       },
       {
@@ -304,7 +304,8 @@ foreach_parser_test_() ->
         functions_with_no_arguments,
         "$millis()",
         "fun (Msg) ->
-          EREDMillis = erlang:system_time(millisecond), ered_millis(EREDMillis)
+          EREDMillis = erlang:system_time(millisecond),
+                                               jsonata_millis(EREDMillis)
         end."
       },
       {
@@ -319,7 +320,8 @@ foreach_parser_test_() ->
         "{ key: $millis() - $millis() }",
         "fun (Msg) ->
           EREDMillis = erlang:system_time(millisecond),
-            #{ <<\"key\">> => ered_millis(EREDMillis) - ered_millis(EREDMillis) }
+            #{ <<\"key\">> => jsonata_millis(EREDMillis) -
+                                                  jsonata_millis(EREDMillis) }
         end."
       },
       {
@@ -333,8 +335,8 @@ foreach_parser_test_() ->
         array_with_funct_calls,
         "[ $toString($$.ary), $toString($$.ary2), \"four\"]",
         "fun (Msg) ->
-           [to_string(maps:get(<<\"ary\">>, Msg)),
-                                to_string(maps:get(<<\"ary2\">>, Msg)), \"four\"]
+           [jsonata_to_string(maps:get(<<\"ary\">>, Msg)),
+                     jsonata_to_string(maps:get(<<\"ary2\">>, Msg)), \"four\"]
         end."
       },
       {
@@ -394,7 +396,7 @@ foreach_parser_test_() ->
         function_split_of_strings,
         "$count($split($$.payload))",
         "fun (Msg) ->
-            erlang:length(split(maps:get(<<\"payload\">>, Msg)))
+            erlang:length(jsonata_split(maps:get(<<\"payload\">>, Msg)))
          end."
       },
       {

@@ -457,35 +457,38 @@ inline_function_definition(_Args, _Expr) ->
 %%
 convert_funct({funct,_LineNo,FunctName}, Expr) ->
     case FunctName of
-        append ->
-            list_to_binary(io_lib:format("lists:append(~s)",
-                                         [args_to_string(Expr)]));
-        count ->
-            list_to_binary(io_lib:format("erlang:length(~s)",
-                                         [args_to_string(Expr)]));
         length ->
             list_to_binary(io_lib:format("jsonata_length(~s)",
                                          [args_to_string(Expr)]));
-        sum ->
-            list_to_binary(io_lib:format("lists:sum(~s)",
-                                         [args_to_string(Expr)]));
-        keys ->
-            list_to_binary(io_lib:format("jsonata_keys(~s)",
-                                         [args_to_string(Expr)]));
-        formatBase ->
-            list_to_binary(io_lib:format("jsonata_formatbase(~s)",
+        toList ->
+            list_to_binary(io_lib:format("jsonata_to_list(~s)",
                                          [args_to_string(Expr)]));
         pad ->
             list_to_binary(io_lib:format("jsonata_pad(~s)",
                                          [args_to_string(Expr)]));
+        formatBase ->
+            list_to_binary(io_lib:format("jsonata_formatbase(~s)",
+                                         [args_to_string(Expr)]));
+        keys ->
+            list_to_binary(io_lib:format("jsonata_keys(~s)",
+                                         [args_to_string(Expr)]));
         substring ->
             list_to_binary(io_lib:format("jsonata_substring(~s)",
+                                         [args_to_string(Expr)]));
+        sum ->
+            list_to_binary(io_lib:format("lists:sum(~s)",
                                          [args_to_string(Expr)]));
         sort ->
             list_to_binary(io_lib:format("lists:sort(~s)",
                                          [args_to_string(Expr)]));
         distinct ->
             list_to_binary(io_lib:format("lists:uniq(~s)",
+                                         [args_to_string(Expr)]));
+        append ->
+            list_to_binary(io_lib:format("lists:append(~s)",
+                                         [args_to_string(Expr)]));
+        count ->
+            list_to_binary(io_lib:format("erlang:length(~s)",
                                          [args_to_string(Expr)]));
         map ->
             %% lists:reverse(...) here because the argumenst to $map(...)
@@ -520,7 +523,7 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
             %% time. This ensures the same timestamp.
             %%
             %% See test id: eb447048178f6e16
-            list_to_binary(io_lib:format("ered_millis(EREDMillis)", []));
+            list_to_binary(io_lib:format("jsonata_millis(EREDMillis)", []));
         pauseMillis ->
             %% this is a ErlangRED special to make the test for millis work
             list_to_binary(io_lib:format("timer:sleep(~s)",
@@ -533,15 +536,15 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
             %% to their JSON representation except for strings. So we convert
             %% things to string and forget about the JSON.
             %% --> https://docs.jsonata.org/string-functions
-            list_to_binary(io_lib:format("to_string(~s)",
+            list_to_binary(io_lib:format("jsonata_to_string(~s)",
                                          [args_to_string(Expr)]));
         toString ->
             %% to_string is implemented by the evaluator - this can be done
             %% with any function that gets too large.
-            list_to_binary(io_lib:format("to_string(~s)",
+            list_to_binary(io_lib:format("jsonata_to_string(~s)",
                                          [args_to_string(Expr)]));
         split ->
-            list_to_binary(io_lib:format("split(~s)",
+            list_to_binary(io_lib:format("jsonata_split(~s)",
                                          [args_to_string(Expr)]));
         now ->
             list_to_binary(io_lib:format("jsonata_now(~s)",
