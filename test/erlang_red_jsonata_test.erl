@@ -31,6 +31,21 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+trim_test() ->
+    ?assertEqual(
+        {ok, <<"abb">>},
+        erlang_red_jsonata:execute(
+            "$trim($$.payload)",
+            #{<<"payload">> => <<"  \t  \nabb   \n">>}
+        )
+    ),
+    ?assertEqual(
+        {ok, "abb"},
+        erlang_red_jsonata:execute(
+            "$trim($$.payload)",
+            #{<<"payload">> => "   \nabb   \n"}
+        )
+    ).
 tolist_test() ->
     ?assertEqual(
         {ok, "abb"},
