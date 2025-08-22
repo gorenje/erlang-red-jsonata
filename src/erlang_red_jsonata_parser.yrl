@@ -487,11 +487,20 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         append ->
             list_to_binary(io_lib:format("lists:append(~s)",
                                          [args_to_string(Expr)]));
+        flatten ->
+            list_to_binary(io_lib:format("lists:flatten(~s)",
+                                         [args_to_string(Expr)]));
         trim ->
             list_to_binary(io_lib:format("string:trim(~s)",
                                          [args_to_string(Expr)]));
         count ->
             list_to_binary(io_lib:format("erlang:length(~s)",
+                                         [args_to_string(Expr)]));
+        base64decode ->
+            list_to_binary(io_lib:format("base64:decode(~s)",
+                                         [args_to_string(Expr)]));
+        base64encode ->
+            list_to_binary(io_lib:format("base64:encode(~s)",
                                          [args_to_string(Expr)]));
         map ->
             %% lists:reverse(...) here because the argumenst to $map(...)

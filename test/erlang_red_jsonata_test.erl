@@ -31,6 +31,22 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+flatten_test() ->
+    ?assertEqual(
+        {ok, [1,2,3,4]},
+        erlang_red_jsonata:execute(
+            "$flatten($$.payload)",
+            #{<<"payload">> => [[1],[2],[3],[4]]}
+        )
+      ),
+    ?assertEqual(
+        {ok, [1,2,3,4]},
+        erlang_red_jsonata:execute(
+            "$flatten([[1],[2],[3],[4]])",
+            #{}
+        )
+      ).
+
 trim_test() ->
     ?assertEqual(
         {ok, <<"abb">>},
@@ -211,6 +227,36 @@ formatbase_functionality_test() ->
                 "$formatBase($random() * 100000, 16)",
                 #{<<"payload">> => 4276992702}
             )
+        )
+    ).
+
+basesixtyfour_test() ->
+    ?assertEqual(
+        {ok, <<"ZGRkZGRk">>},
+        erlang_red_jsonata:execute(
+            "$base64encode(\"dddddd\")",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"dddddd">>},
+        erlang_red_jsonata:execute(
+            "$base64decode(\"ZGRkZGRk\")",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"aGVsbG8gd29ybGQ=">>},
+        erlang_red_jsonata:execute(
+            "$base64encode($$.payload)",
+            #{ <<"payload">> => <<"hello world">>}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"hello world">>},
+        erlang_red_jsonata:execute(
+            "$base64decode($$.payload)",
+            #{ <<"payload">> => <<"aGVsbG8gd29ybGQ=">>}
         )
     ).
 

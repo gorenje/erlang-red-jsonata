@@ -39,6 +39,8 @@ At the time of writing, this library supports a minimum set of functionality of 
 | Function | Comment |
 | ---- | ------- |
 | $append | Supported |
+| $base64encode | Supported |
+| $base64decode | Supported |
 | $count | Supported |
 | $distinct | Supported |
 | $formatBase | Supported |
@@ -60,6 +62,7 @@ At the time of writing, this library supports a minimum set of functionality of 
 | $privdir | (Erlang-Red only) Retrieve the location of the /priv directory |
 | $toString | (Erlang-RED only) Convert anything and everything to a binary |
 | $toList | (Erlang-RED only) Convert anything and everything to a list |
+| $flatten | (Erlang-RED only) Flatten arrays into single arrays `lists:flatten/1` |
 
 Functions are defined in two places [in the parser](https://github.com/gorenje/erlang-red-jsonata/blob/f835ebb55c6df7f180ceeaeffed21a51125a25b7/src/erlang_red_jsonata_parser.yrl#L423-L484) or in the [evaluator](https://github.com/gorenje/erlang-red-jsonata/blob/f835ebb55c6df7f180ceeaeffed21a51125a25b7/src/erlang_red_jsonata.erl#L50-L109).
 
