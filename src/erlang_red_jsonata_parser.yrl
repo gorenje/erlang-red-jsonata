@@ -172,6 +172,8 @@ expr -> msg_obj dot_names '[' '-' int ']' :
             to_map_get_with_neg_index('$2', '$5').
 expr -> msg_obj dot_names '[' int ']' : to_map_get_with_index('$2', '$4').
 expr -> msg_obj dot_names '[' arith_expr ']' : to_map_get_arith_expr('$2', '$4').
+expr -> msg_obj dot_names '[' '-' arith_expr ']' :
+            to_map_get_neg_arith_expr('$2', '$5').
 expr -> string : '$1'.
 expr -> sqstring : replace_single_quotes('$1').
 expr -> chars : '$1'.
@@ -256,12 +258,17 @@ to_list(Expr) when is_binary(Expr) ->
 to_list(Expr) ->
     Expr.
 
-to_map_get_arith_expr(Ary, {op, _, _, _} = Expr) ->
-    io_lib:format("lists:nth(~s, ~s)",
+to_map_get_neg_arith_expr(Ary, {op, _, _, _} = Expr) ->
+    io_lib:format("lists:nth(~s, lists:reverse(~s))",
                   [convert_arith_expr(Expr), to_map_get(Ary)]).
+
 to_map_get_with_neg_index(Ary, {int, _LineNo, V}) ->
     io_lib:format("lists:nth(~s, lists:reverse(~s))",
                   [integer_to_list(V), to_map_get(Ary)]).
+
+to_map_get_arith_expr(Ary, {op, _, _, _} = Expr) ->
+    io_lib:format("lists:nth((~s)+1, ~s)",
+                  [convert_arith_expr(Expr), to_map_get(Ary)]).
 
 to_map_get_with_index(Ary, {int, _LineNo, V}) ->
     io_lib:format("lists:nth(~s, ~s)", [integer_to_list(V+1), to_map_get(Ary)]).

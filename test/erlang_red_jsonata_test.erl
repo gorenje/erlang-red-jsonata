@@ -1103,10 +1103,36 @@ modulo_test() ->
         )
     ),
     ?assertEqual(
-        {ok, "one"},
+        {ok, "two"},
         erlang_red_jsonata:execute(
             "$$.toplookup[$$.counter % 4]",
             #{<<"counter">> => 13,
+              <<"toplookup">> => ["one","two","three","four"]}
+        )
+      ),
+    ?assertEqual(
+        {ok, "four"},
+        erlang_red_jsonata:execute(
+            "$$.toplookup[-$$.counter % 4]",
+            #{<<"counter">> => 13,
+              <<"toplookup">> => ["one","two","three","four"]}
+        )
+      ),
+    ?assertEqual(
+        {ok, "two"},
+        erlang_red_jsonata:execute(
+            "$$.toplookup[-$$.counter % $$.rem]",
+            #{<<"counter">> => 27,
+              <<"rem">> => 4,
+              <<"toplookup">> => ["one","two","three","four"]}
+        )
+      ),
+    ?assertEqual(
+        {ok, "four"},
+        erlang_red_jsonata:execute(
+            "$$.toplookup[$$.counter % $$.rem]",
+            #{<<"counter">> => 27,
+              <<"rem">> => 4,
               <<"toplookup">> => ["one","two","three","four"]}
         )
       ).

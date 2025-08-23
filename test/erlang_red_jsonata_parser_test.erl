@@ -141,10 +141,33 @@ foreach_parser_test_() ->
         end."
       },
       {
+       remainder_neg_modulo_operator_array,
+       "$$.toplookup[-$$.counter % 4]",
+       "fun (Msg) ->
+            lists:nth(maps:get(<<\"counter\">>, Msg) rem 4, lists:reverse(maps:get(<<\"toplookup\">>, Msg)))
+        end."
+      },
+      {
+       remainder_neg_modulo_operator_array_part_two,
+       "$$.toplookup[-$$.counter % $$.rem]",
+       "fun (Msg) ->
+            lists:nth(maps:get(<<\"counter\">>, Msg) rem maps:get(<<\"rem\">>,
+                 Msg), lists:reverse(maps:get(<<\"toplookup\">>, Msg)))
+        end."
+      },
+      {
+       remainder_modulo_operator_array_part_two,
+       "$$.toplookup[$$.counter % $$.rem]",
+       "fun (Msg) ->
+              lists:nth((maps:get(<<\"counter\">>, Msg) rem
+               maps:get(<<\"rem\">>, Msg))+1, maps:get(<<\"toplookup\">>, Msg))
+        end."
+      },
+      {
        remainder_modulo_operator_array,
        "$$.toplookup[$$.counter % 4]",
        "fun (Msg) ->
-              lists:nth(maps:get(<<\"counter\">>, Msg) rem 4,
+              lists:nth((maps:get(<<\"counter\">>, Msg) rem 4)+1,
                                       maps:get(<<\"toplookup\">>, Msg))
         end."
       },
