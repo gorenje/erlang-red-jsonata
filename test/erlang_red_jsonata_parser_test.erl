@@ -141,6 +141,14 @@ foreach_parser_test_() ->
         end."
       },
       {
+       remainder_modulo_operator_array,
+       "$$.toplookup[$$.counter % 4]",
+       "fun (Msg) ->
+              lists:nth(maps:get(<<\"counter\">>, Msg) rem 4,
+                                      maps:get(<<\"toplookup\">>, Msg))
+        end."
+      },
+      {
        remainder_modulo_operator,
        "($$.payload + 1) % $$.ten",
        "fun (Msg) ->

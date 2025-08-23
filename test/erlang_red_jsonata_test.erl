@@ -31,6 +31,7 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+
 flatten_test() ->
     ?assertEqual(
         {ok, [1,2,3,4]},
@@ -1100,7 +1101,16 @@ modulo_test() ->
             "($$.currentframe + 1 + 3) % $$.totalframes",
             #{<<"currentframe">> => 12, <<"totalframes">> => 7}
         )
-    ).
+    ),
+    ?assertEqual(
+        {ok, "one"},
+        erlang_red_jsonata:execute(
+            "$$.toplookup[$$.counter % 4]",
+            #{<<"counter">> => 13,
+              <<"toplookup">> => ["one","two","three","four"]}
+        )
+      ).
+
 
 privdir_test() ->
     %% without an argument, it's assumed to be erlang_red - the application
