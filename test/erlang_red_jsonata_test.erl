@@ -33,6 +33,59 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+match_operator_support_slash_dot_slash_test() ->
+    ?assertEqual(
+        {ok, [
+            #{
+                <<"groups">> => [],
+                <<"index">> => 0,
+                <<"match">> => <<"a">>
+            },
+            #{
+                <<"groups">> => [],
+                <<"index">> => 1,
+                <<"match">> => <<"b">>
+            },
+            #{
+                <<"groups">> => [],
+                <<"index">> => 2,
+                <<"match">> => <<"c">>
+            },
+            #{
+                <<"groups">> => [],
+                <<"index">> => 3,
+                <<"match">> => <<"d">>
+            },
+            #{
+                <<"groups">> => [],
+                <<"index">> => 4,
+                <<"match">> => <<"e">>
+            }
+        ]},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /./)",
+            #{<<"payload">> => <<"abcde">>}
+        )
+    ),
+    ?assertEqual(
+        {ok, [
+            #{
+                <<"groups">> => [],
+                <<"index">> => 0,
+                <<"match">> => <<"a">>
+            },
+            #{
+                <<"groups">> => [],
+                <<"index">> => 5,
+                <<"match">> => <<"a">>
+            }
+        ]},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /a/)",
+            #{<<"payload">> => <<"abcdea">>}
+        )
+    ).
+
 match_operator_single_match_test() ->
     ?assertEqual(
         {ok, #{
@@ -123,13 +176,16 @@ match_operator_multiple_matches_with_limit_test() ->
     %% no result. The corresponding attribute on the msg object isn't defined.
     ?assertEqual(
         undefined,
-        element(1, erlang_red_jsonata:execute(
-            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, 0)",
-            #{
-                <<"payload">> =>
-                    <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>
-            }
-        ))
+        element(
+            1,
+            erlang_red_jsonata:execute(
+                "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, 0)",
+                #{
+                    <<"payload">> =>
+                        <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>
+                }
+            )
+        )
     ),
 
     {exception,
@@ -196,13 +252,16 @@ match_operator_multiple_matches_with_limit_test() ->
     %% that should be assigned this result not to be defined.
     ?assertEqual(
         undefined,
-        element(1, erlang_red_jsonata:execute(
-            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, $$.limit)",
-            #{
-                <<"payload">> => <<"3">>,
-                <<"limit">> => <<"2">>
-            }
-        ))
+        element(
+            1,
+            erlang_red_jsonata:execute(
+                "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, $$.limit)",
+                #{
+                    <<"payload">> => <<"3">>,
+                    <<"limit">> => <<"2">>
+                }
+            )
+        )
     ).
 
 flatten_test() ->
@@ -556,6 +615,13 @@ replace_test() ->
     ).
 
 replace_with_regexp_test() ->
+    ?assertEqual(
+        {ok, <<"______________________________________">>},
+        erlang_red_jsonata:execute(
+            "$replace($$.payload,/./,\"_\")",
+            #{<<"payload">> => "Screen Shot 2023-09-16 at 21.14.14.png"}
+        )
+    ),
     ?assertEqual(
         {ok, <<"Screen_Shot_2023-09-16_at_21.14.14.png">>},
         erlang_red_jsonata:execute(

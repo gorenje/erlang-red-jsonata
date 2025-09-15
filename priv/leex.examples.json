@@ -298,5 +298,8 @@
     "$split($$.payload.name,\"/\")[-1]",
     "{\t    \"lomin\": $$.lomin,\t    \"lamin\": $$.lamin,\t    \"lamax\": $$.lamax,\t    \"lomax\": $$.lomax\t}",
     "/* asdsadasd",
-    "$sum($map($$.payload, function($v) { $v.col2.col3 }))"
+    "$sum($map($$.payload, function($v) { $v.col2.col3 }))",
+    "$match($$.payload, /./, 1)",
+    "$match($$.payload, /./, -1)",
+    "$replace($$.payload, /./, \"_\")"
 ]

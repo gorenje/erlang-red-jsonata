@@ -21,6 +21,20 @@
 foreach_parser_test_() ->
     Tests = [
       {
+       parse_slash_dot_slash_regexp_for_replace,
+       "$replace($$.payload, /./, \"_\")",
+       "fun (Msg) ->
+               re:replace(maps:get(<<\"payload\">>, Msg), \".\", \"_\", [dotall,dollar_endonly,caseless,global,{return,binary}])
+        end."
+      },
+      {
+       parse_slash_dot_slash_regexp_for_match,
+       "$match($$.payload, /./, -1)",
+       "fun (Msg) ->
+           jsonata_match(maps:get(<<\"payload\">>, Msg), \".\", -1)
+        end."
+      },
+      {
        function_uses_atoms,
        "$map( $$.payload, function ($v) { $v.'_msgid' })",
        "fun (Msg) ->

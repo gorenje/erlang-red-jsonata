@@ -29,7 +29,9 @@ INPUT      = \$\$
 DSTRING    = ["][^\"]*["]
 SSTRING    = \'[^\']+\'
 CHARS      = [a-z0-9A-Z_]+
-REGEXP     = /[^\*][^\/]+/
+
+%% Avoid matching comments that start with "/*" and support "/./" as regexp
+REGEXP     = /([^\*][^\/]+|[^\*])/
 
 Rules.
 
