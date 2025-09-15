@@ -1,6 +1,8 @@
 Erlang Parser for JSONata
 =====
 
+[![Erlang CI](https://github.com/gorenje/erlang-red-jsonata/actions/workflows/erlang.yml/badge.svg)](https://github.com/gorenje/erlang-red-jsonata/actions/workflows/erlang.yml)
+
 Erlang parser implementation for the [JSONata](https://jsonata.org) transform language.
 
 JSONata plays a central role in [Node-RED](https://nodered.org) - the low-code visual flow-based programming environment.
@@ -78,3 +80,8 @@ Test
 -----
 
     $ rebar3 eunit
+
+Coffee Time
+----
+
+<a href="https://www.buymeacoffee.com/gorenje" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
