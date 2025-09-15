@@ -14,14 +14,16 @@ compile_to_function_with_string_test() ->
 
 compile_to_function_with_binary_test() ->
     {ok, Func} = erlang_red_jsonata:compile_to_function(
-        <<"\n"
-        "     $string(\n"
-        "         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &\n"
-        "         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &\n"
-        "         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &\n"
-        "         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4)\n"
-        "      )\n"
-        "    ">>
+        <<
+            "\n"
+            "     $string(\n"
+            "         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &\n"
+            "         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &\n"
+            "         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4) &\n"
+            "         $substring( $pad( $formatBase($$.random * 100000, 16), 4, '0'),0,4)\n"
+            "      )\n"
+            "    "
+        >>
     ),
     ?assertEqual(<<"7a127a127a127a12">>, Func(#{<<"random">> => 5})),
     ?assertEqual(<<"927c927c927c927c">>, Func(#{<<"random">> => 6})),
@@ -31,22 +33,189 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+match_operator_single_match_test() ->
+    ?assertEqual(
+        {ok, #{
+            <<"groups">> =>
+                [<<"123">>, <<"abc">>, <<"456">>, <<"def">>],
+            <<"index">> => 3,
+            <<"match">> => <<"123abc456def">>
+        }},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/)",
+            #{<<"payload">> => <<"[[[123abc456def]]]">>}
+        )
+    ),
+    ?assertEqual(
+        {ok, #{
+            <<"groups">> =>
+                [<<"123">>, <<"abc">>, <<"456">>, <<"def">>],
+            <<"index">> => 0,
+            <<"match">> => <<"123abc456def">>
+        }},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/)",
+            #{<<"payload">> => <<"123abc456def]]]">>}
+        )
+    ),
+    ?assertEqual(
+        {ok, #{
+            <<"groups">> =>
+                [<<"123">>, <<"abc">>, <<"456">>, <<"def">>],
+            <<"index">> => 0,
+            <<"match">> => <<"123abc456def">>
+        }},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/)",
+            #{<<"payload">> => <<"123abc456def">>}
+        )
+    ).
+
+match_operator_multiple_matches_test() ->
+    ?assertEqual(
+        {ok, [
+            #{
+                <<"groups">> =>
+                    [<<"123">>, <<"abc">>, <<"456">>, <<"def">>],
+                <<"index">> => 0,
+                <<"match">> => <<"123abc456def">>
+            },
+            #{
+                <<"groups">> =>
+                    [<<"789">>, <<"ghi">>, <<"012">>, <<"jkl">>],
+                <<"index">> => 15,
+                <<"match">> => <<"789ghi012jkl">>
+            },
+            #{
+                <<"groups">> =>
+                    [<<"345">>, <<"mno">>, <<"678">>, <<"pqr">>],
+                <<"index">> => 30,
+                <<"match">> => <<"345mno678pqr">>
+            }
+        ]},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/)",
+            #{
+                <<"payload">> =>
+                    <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>
+            }
+        )
+    ).
+
+match_operator_multiple_matches_with_limit_test() ->
+    ?assertEqual(
+        {ok, #{
+            <<"groups">> =>
+                [<<"123">>, <<"abc">>, <<"456">>, <<"def">>],
+            <<"index">> => 0,
+            <<"match">> => <<"123abc456def">>
+        }},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, 1)",
+            #{
+                <<"payload">> =>
+                    <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>
+            }
+        )
+    ),
+
+    ?assertEqual(
+        {ok, undefined},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, 0)",
+            #{
+                <<"payload">> =>
+                    <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>
+            }
+        )
+    ),
+
+    {exception,
+        {error,
+            "Invalid JSONata expression: Third argument of match function must evaluate to a positive number",
+            _Stacktrace}} =
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, -1)",
+            #{
+                <<"payload">> =>
+                    <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>
+            }
+        ),
+
+    ?assertEqual(
+        {ok, [
+            #{
+                <<"groups">> =>
+                    [<<"123">>, <<"abc">>, <<"456">>, <<"def">>],
+                <<"index">> => 0,
+                <<"match">> => <<"123abc456def">>
+            },
+            #{
+                <<"groups">> =>
+                    [<<"789">>, <<"ghi">>, <<"012">>, <<"jkl">>],
+                <<"index">> => 15,
+                <<"match">> => <<"789ghi012jkl">>
+            }
+        ]},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, 2)",
+            #{
+                <<"payload">> =>
+                    <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>
+            }
+        )
+    ),
+
+    ?assertEqual(
+        {ok, [
+            #{
+                <<"groups">> =>
+                    [<<"123">>, <<"abc">>, <<"456">>, <<"def">>],
+                <<"index">> => 0,
+                <<"match">> => <<"123abc456def">>
+            },
+            #{
+                <<"groups">> =>
+                    [<<"789">>, <<"ghi">>, <<"012">>, <<"jkl">>],
+                <<"index">> => 15,
+                <<"match">> => <<"789ghi012jkl">>
+            }
+        ]},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, $$.limit)",
+            #{
+                <<"payload">> =>
+                    <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>,
+                <<"limit">> => <<"2">>
+            }
+        )
+    ),
+    ?assertEqual(
+        {ok, undefined},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, $$.limit)",
+            #{
+                <<"payload">> => <<"3">>,
+                <<"limit">> => <<"2">>
+            }
+        )
+    ).
 
 flatten_test() ->
     ?assertEqual(
-        {ok, [1,2,3,4]},
+        {ok, [1, 2, 3, 4]},
         erlang_red_jsonata:execute(
             "$flatten($$.payload)",
-            #{<<"payload">> => [[1],[2],[3],[4]]}
+            #{<<"payload">> => [[1], [2], [3], [4]]}
         )
-      ),
+    ),
     ?assertEqual(
-        {ok, [1,2,3,4]},
+        {ok, [1, 2, 3, 4]},
         erlang_red_jsonata:execute(
             "$flatten([[1],[2],[3],[4]])",
             #{}
         )
-      ).
+    ).
 
 trim_test() ->
     ?assertEqual(
@@ -250,14 +419,14 @@ basesixtyfour_test() ->
         {ok, <<"aGVsbG8gd29ybGQ=">>},
         erlang_red_jsonata:execute(
             "$base64encode($$.payload)",
-            #{ <<"payload">> => <<"hello world">>}
+            #{<<"payload">> => <<"hello world">>}
         )
     ),
     ?assertEqual(
         {ok, <<"hello world">>},
         erlang_red_jsonata:execute(
             "$base64decode($$.payload)",
-            #{ <<"payload">> => <<"aGVsbG8gd29ybGQ=">>}
+            #{<<"payload">> => <<"aGVsbG8gd29ybGQ=">>}
         )
     ).
 
@@ -1106,37 +1275,44 @@ modulo_test() ->
         {ok, "two"},
         erlang_red_jsonata:execute(
             "$$.toplookup[$$.counter % 4]",
-            #{<<"counter">> => 13,
-              <<"toplookup">> => ["one","two","three","four"]}
+            #{
+                <<"counter">> => 13,
+                <<"toplookup">> => ["one", "two", "three", "four"]
+            }
         )
-      ),
+    ),
     ?assertEqual(
         {ok, "four"},
         erlang_red_jsonata:execute(
             "$$.toplookup[-$$.counter % 4]",
-            #{<<"counter">> => 13,
-              <<"toplookup">> => ["one","two","three","four"]}
+            #{
+                <<"counter">> => 13,
+                <<"toplookup">> => ["one", "two", "three", "four"]
+            }
         )
-      ),
+    ),
     ?assertEqual(
         {ok, "two"},
         erlang_red_jsonata:execute(
             "$$.toplookup[-$$.counter % $$.rem]",
-            #{<<"counter">> => 27,
-              <<"rem">> => 4,
-              <<"toplookup">> => ["one","two","three","four"]}
+            #{
+                <<"counter">> => 27,
+                <<"rem">> => 4,
+                <<"toplookup">> => ["one", "two", "three", "four"]
+            }
         )
-      ),
+    ),
     ?assertEqual(
         {ok, "four"},
         erlang_red_jsonata:execute(
             "$$.toplookup[$$.counter % $$.rem]",
-            #{<<"counter">> => 27,
-              <<"rem">> => 4,
-              <<"toplookup">> => ["one","two","three","four"]}
+            #{
+                <<"counter">> => 27,
+                <<"rem">> => 4,
+                <<"toplookup">> => ["one", "two", "three", "four"]
+            }
         )
-      ).
-
+    ).
 
 privdir_test() ->
     %% without an argument, it's assumed to be erlang_red - the application

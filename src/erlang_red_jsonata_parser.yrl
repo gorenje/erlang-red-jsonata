@@ -430,6 +430,8 @@ args_to_string([{string, _LineNo, String}|T], Acc) ->
     args_to_string(T, io_lib:format("~s, ~s", [Acc, String]));
 args_to_string([{name, _LineNo, String}|T], Acc) ->
     args_to_string(T, io_lib:format("~s, ~s", [Acc, String]));
+args_to_string([{regexp, _LineNo, String}|T], Acc) ->
+    args_to_string(T, io_lib:format("~s, ~s", [Acc, String]));
 args_to_string([H|T], Acc) ->
     args_to_string(T, io_lib:format("~s, ~s", [Acc, H])).
 
@@ -485,6 +487,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
                                          [args_to_string(Expr)]));
         substring ->
             list_to_binary(io_lib:format("jsonata_substring(~s)",
+                                         [args_to_string(Expr)]));
+        match ->
+            list_to_binary(io_lib:format("jsonata_match(~s)",
                                          [args_to_string(Expr)]));
         sum ->
             list_to_binary(io_lib:format("lists:sum(~s)",

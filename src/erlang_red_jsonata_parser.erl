@@ -209,6 +209,8 @@ args_to_string([{string, _LineNo, String}|T], Acc) ->
     args_to_string(T, io_lib:format("~s, ~s", [Acc, String]));
 args_to_string([{name, _LineNo, String}|T], Acc) ->
     args_to_string(T, io_lib:format("~s, ~s", [Acc, String]));
+args_to_string([{regexp, _LineNo, String}|T], Acc) ->
+    args_to_string(T, io_lib:format("~s, ~s", [Acc, String]));
 args_to_string([H|T], Acc) ->
     args_to_string(T, io_lib:format("~s, ~s", [Acc, H])).
 
@@ -264,6 +266,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
                                          [args_to_string(Expr)]));
         substring ->
             list_to_binary(io_lib:format("jsonata_substring(~s)",
+                                         [args_to_string(Expr)]));
+        match ->
+            list_to_binary(io_lib:format("jsonata_match(~s)",
                                          [args_to_string(Expr)]));
         sum ->
             list_to_binary(io_lib:format("lists:sum(~s)",
@@ -602,7 +607,7 @@ yecctoken2string1(Other) ->
 
 
 
--file("/code/src/erlang_red_jsonata_parser.erl", 605).
+-file("/code/src/erlang_red_jsonata_parser.erl", 610).
 
 -dialyzer({nowarn_function, yeccpars2/7}).
 -compile({nowarn_unused_function,  yeccpars2/7}).
@@ -4324,4 +4329,4 @@ yeccpars2_148_(__Stack0) ->
   end | __Stack].
 
 
--file("/code/src/erlang_red_jsonata_parser.yrl", 637).
+-file("/code/src/erlang_red_jsonata_parser.yrl", 642).

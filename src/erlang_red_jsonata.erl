@@ -273,6 +273,58 @@ handle_local_function(
     [Str, Start, Len]
 ) when is_binary(Str), is_integer(Start), is_integer(Len) ->
     handle_local_function(jsonata_substring, [binary_to_list(Str), Start, Len]);
+%% ---> $match(...)
+handle_local_function(
+    jsonata_match,
+    [Str, RegExp]
+) ->
+    {ok, R} = re:compile(
+        any_to_list(RegExp),
+        [dotall, dollar_endonly, caseless]
+    ),
+    Args = [global],
+    case re:run(any_to_list(Str), R, [{capture, all, binary} | Args]) of
+        nomatch ->
+            undefined;
+        {match, CaptureBinary} ->
+            {match, CaptureIdx} =
+                re:run(any_to_list(Str), R, [{capture, all, index} | Args]),
+            match_capture_objects(CaptureBinary, CaptureIdx, [])
+    end;
+handle_local_function(
+    jsonata_match,
+    [Str, RegExp, MatchLimit]
+) when is_integer(MatchLimit) =:= false ->
+    handle_local_function(
+        jsonata_match,
+        [
+            Str,
+            RegExp,
+            list_to_integer(any_to_list(MatchLimit))
+        ]
+    );
+handle_local_function(
+    jsonata_match,
+    [_Str, _RegExp, MatchLimit] = Args
+) when is_integer(MatchLimit), MatchLimit < 0 ->
+    erlang:error(
+        "Invalid JSONata expression: Third argument of match function must evaluate to a positive number",
+        [{"$match", Args}]
+    );
+handle_local_function(
+    jsonata_match,
+    [_Str, _RegExp, MatchLimit]
+) when is_integer(MatchLimit), MatchLimit =:= 0 ->
+    undefined;
+handle_local_function(
+    jsonata_match,
+    [Str, RegExp, MatchLimit]
+) when is_integer(MatchLimit), MatchLimit > 0 ->
+    match_capture_limit(
+        handle_local_function(jsonata_match, [Str, RegExp]),
+        MatchLimit,
+        []
+    );
 %% -------> fall through to unsupported
 handle_local_function(FunctionName, Args) ->
     erlang:error(jsonata_unsupported, [{FunctionName, Args}]).
@@ -347,3 +399,33 @@ iso_8601_datestamp(Timestamp) ->
             [Year, Month, Day, Hour, Min, Sec]
         )
     ).
+
+%%
+%% See test id : #d206746f9f2594a6 for more format details
+%% --> https://flows.red-erik.org/f/d206746f9f2594a6
+%%
+match_capture_objects([], [], [Hd | []] = _Acc) ->
+    Hd;
+match_capture_objects([], [], Acc) ->
+    lists:reverse(Acc);
+match_capture_objects(
+    [[Matched | RestMatched] | RestBinary],
+    [[{MatchedIdx, _} | _RestMatched] | RestIndicies],
+    Acc
+) ->
+    CapHsh = #{
+        <<"match">> => Matched,
+        <<"index">> => MatchedIdx,
+        <<"groups">> => RestMatched
+    },
+    match_capture_objects(RestBinary, RestIndicies, [CapHsh | Acc]).
+%%
+%%
+match_capture_limit(undefined, _, _) ->
+    undefined;
+match_capture_limit(_Result, 0, [Hd | []] = _Acc) ->
+    Hd;
+match_capture_limit(_Result, 0, Acc) ->
+    lists:reverse(Acc);
+match_capture_limit([HD | Rest], MatchLimit, Acc) ->
+    match_capture_limit(Rest, MatchLimit - 1, [HD | Acc]).
