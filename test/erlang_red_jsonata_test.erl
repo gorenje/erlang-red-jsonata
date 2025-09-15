@@ -119,15 +119,17 @@ match_operator_multiple_matches_with_limit_test() ->
         )
     ),
 
+    %% undefined return value is generated when there is no match or no
+    %% no result. The corresponding attribute on the msg object isn't defined.
     ?assertEqual(
-        {ok, undefined},
-        erlang_red_jsonata:execute(
+        undefined,
+        element(1, erlang_red_jsonata:execute(
             "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, 0)",
             #{
                 <<"payload">> =>
                     <<"123abc456def|||789ghi012jkl|||345mno678pqr||">>
             }
-        )
+        ))
     ),
 
     {exception,
@@ -190,15 +192,17 @@ match_operator_multiple_matches_with_limit_test() ->
             }
         )
     ),
+    %% undefined because no match is found, this will result in the msg variable
+    %% that should be assigned this result not to be defined.
     ?assertEqual(
-        {ok, undefined},
-        erlang_red_jsonata:execute(
+        undefined,
+        element(1, erlang_red_jsonata:execute(
             "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/, $$.limit)",
             #{
                 <<"payload">> => <<"3">>,
                 <<"limit">> => <<"2">>
             }
-        )
+        ))
     ).
 
 flatten_test() ->

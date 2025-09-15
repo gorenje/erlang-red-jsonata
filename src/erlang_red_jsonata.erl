@@ -49,6 +49,14 @@ execute(JSONata, Msg) ->
                         "jsonata unsupported function: ~p", element(3, H)
                     )
                 )};
+        error:undefined:Stacktrace ->
+            [H | _] = Stacktrace,
+            {undefined,
+                list_to_binary(
+                    io_lib:format(
+                        "jsonata undefined result: ~p", element(3, H)
+                    )
+                )};
         E:M:S ->
             {exception, {E, M, S}}
     end.
@@ -285,7 +293,7 @@ handle_local_function(
     Args = [global],
     case re:run(any_to_list(Str), R, [{capture, all, binary} | Args]) of
         nomatch ->
-            undefined;
+            erlang:error(undefined, [{"$match", Args}]);
         {match, CaptureBinary} ->
             {match, CaptureIdx} =
                 re:run(any_to_list(Str), R, [{capture, all, index} | Args]),
@@ -313,9 +321,9 @@ handle_local_function(
     );
 handle_local_function(
     jsonata_match,
-    [_Str, _RegExp, MatchLimit]
+    [_Str, _RegExp, MatchLimit] = Args
 ) when is_integer(MatchLimit), MatchLimit =:= 0 ->
-    undefined;
+    erlang:error(undefined, [{"$match", Args}]);
 handle_local_function(
     jsonata_match,
     [Str, RegExp, MatchLimit]
@@ -421,8 +429,6 @@ match_capture_objects(
     match_capture_objects(RestBinary, RestIndicies, [CapHsh | Acc]).
 %%
 %%
-match_capture_limit(undefined, _, _) ->
-    undefined;
 match_capture_limit(_Result, 0, [Hd | []] = _Acc) ->
     Hd;
 match_capture_limit(_Result, 0, Acc) ->
