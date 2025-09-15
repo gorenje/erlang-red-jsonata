@@ -21,6 +21,24 @@
 foreach_parser_test_() ->
     Tests = [
       {
+       attribute_access_after_function_call,
+       "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/,1).match",
+       "fun (Msg) ->
+                 maps:get(<<\"match\">>,
+                      jsonata_match(maps:get(<<\"payload\">>,
+                           Msg), \"([0-9]+)([a-z]+)([0-9]+)([a-z]+)\", 1))
+        end."
+      },
+      {
+       attribute_and_array_access_after_function_call,
+       "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/,1)[0].match",
+       "fun (Msg) ->
+            maps:get(<<\"match\">>, lists:nth(1,
+                      jsonata_match(maps:get(<<\"payload\">>, Msg),
+                            \"([0-9]+)([a-z]+)([0-9]+)([a-z]+)\", 1)))
+        end."
+      },
+      {
        parse_slash_dot_slash_regexp_for_replace,
        "$replace($$.payload, /./, \"_\")",
        "fun (Msg) ->

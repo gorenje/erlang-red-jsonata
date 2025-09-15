@@ -33,6 +33,36 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+match_operator_access_data_test() ->
+    ?assertEqual(
+        {ok, <<"a">>},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /./, 1).match",
+            #{<<"payload">> => <<"abcde">>}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"b">>},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /./, 2)[1].match",
+            #{<<"payload">> => <<"abcde">>}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"e">>},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /./, 5)[-1].match",
+            #{<<"payload">> => <<"abcde">>}
+        )
+    ),
+    ?assertEqual(
+        {ok, <<"d">>},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /./, 5)[-2].match",
+            #{<<"payload">> => <<"abcde">>}
+        )
+    ).
+
 match_operator_support_slash_dot_slash_test() ->
     ?assertEqual(
         {ok, [

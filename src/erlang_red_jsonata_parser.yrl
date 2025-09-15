@@ -17,8 +17,9 @@ Header
 Nonterminals
   ampersand
   ampersands
-  args
   arg
+  args
+  arith_expr
   arith_operators
   array
   cmt_content
@@ -28,12 +29,12 @@ Nonterminals
   dot_name
   dot_names
   expr
-  function_definition
-  arith_expr
+  funct_call_with_array
   function_call
+  function_definition
+  key_name
   key_value_pair
   key_value_pairs
-  key_name
   num
   num_function_call
   root
@@ -71,8 +72,8 @@ Terminals
   msg_obj
   name
   regexp
-  string
   sqstring
+  string
 .
 
 %%
@@ -118,16 +119,17 @@ statement -> arith_expr : convert_arith_expr('$1').
 %% arrays need supporting
 statement -> array : '$1'.
 
-%% support this --> $split(....)[...]
-statement -> function_call '[' expr ']' :
-                 function_call_with_array('$1', positive, '$3').
-statement -> function_call '[' '-' expr ']' :
-                 function_call_with_array('$1', negative, '$4').
-
 %% comments have rights to be statements as well.
 statement -> comments : comment.
 
 %%%%%%%%%%%%%%%% the actual definitions of stuff
+
+%% support this --> $split(....)[...]
+funct_call_with_array -> function_call '[' expr ']' :
+                 function_call_with_array('$1', positive, '$3').
+funct_call_with_array -> function_call '[' '-' expr ']' :
+                 function_call_with_array('$1', negative, '$4').
+
 function_call -> funct '(' args ')' : convert_funct('$1', '$3').
 function_call -> funct '(' ')' : convert_funct('$1', {no_args}).
 
@@ -183,6 +185,9 @@ expr -> name : '$1'.
 expr -> dollar name : '$2'.
 expr -> dollar name dot_names : {var_ref, '$2', '$3'}.
 expr -> function_call : '$1'.
+expr -> function_call dot_names : to_map_get('$2', '$1').
+expr -> funct_call_with_array : '$1'.
+expr -> funct_call_with_array dot_names : to_map_get('$2', '$1').
 expr -> regexp : '$1'.
 
 %% num are used in arithmetic expressions, these are explicitly not the
