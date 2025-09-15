@@ -57,6 +57,25 @@ execute(JSONata, Msg) ->
                         "jsonata undefined result: ~p", element(3, H)
                     )
                 )};
+        %% if any keys that are being accessed aren't defined, then don't
+        %% raise an exception, rather an undefined error. This allows the caller
+        %% to quietly ignore missing keys but also not defined result parameters.
+        error:{badkey, KeyName}:_Stacktrace ->
+            {undefined,
+                list_to_binary(
+                    io_lib:format(
+                        "jsonata undefined key: ~p", [KeyName]
+                    )
+                )};
+        %% special unboundedness, NaN is a term in Javascript and someone might
+        %% want to use it in JSONata where it is not defined.
+        error:{unbound, 'NaN'}:_Stacktrace ->
+            {undefined,
+                list_to_binary(
+                    io_lib:format(
+                        "jsonata NaN is undefined", []
+                    )
+                )};
         E:M:S ->
             {exception, {E, M, S}}
     end.
@@ -98,6 +117,11 @@ compile_to_function(JSONata) ->
 %% Inspired by this blog post:
 %% https://grantwinney.com/how-to-evaluate-a-string-of-code-in-erlang-at-runtime/
 %%
+%%
+handle_local_function(jsonata_not, []) ->
+    false;
+handle_local_function(jsonata_not, [Arg]) ->
+    not to_bool(Arg);
 %%
 handle_local_function(any_to_list, [Arg]) when is_float(Arg) ->
     float_to_list(Arg, [short]);
@@ -435,3 +459,29 @@ match_capture_limit(_Result, 0, Acc) ->
     lists:reverse(Acc);
 match_capture_limit([HD | Rest], MatchLimit, Acc) ->
     match_capture_limit(Rest, MatchLimit - 1, [HD | Acc]).
+
+%%
+%% used by the $not(...) operator to convert "things" to booleans.
+to_bool(false) ->
+    false;
+%% all atoms are undefined and raise an exception except the ones defined here.
+to_bool(true) ->
+    true;
+to_bool(null) ->
+    false;
+to_bool(<<>>) ->
+    false;
+to_bool("") ->
+    false;
+to_bool(V) when is_map(V), V =:= #{} ->
+    false;
+to_bool(V) when is_float(V), V =:= +0.0 ->
+    false;
+to_bool(V) when is_float(V), V =:= -0.0 ->
+    false;
+to_bool(V) when is_integer(V), V =:= 0 ->
+    false;
+to_bool(V) when is_atom(V) ->
+    erlang:error(undefined, [V]);
+to_bool(_) ->
+    true.

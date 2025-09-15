@@ -33,6 +33,95 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+not_operator_test() ->
+    ?assertEqual(
+        undefined,
+        element(
+            1,
+            erlang_red_jsonata:execute(
+                "$not($$.notdefined)",
+                #{}
+            )
+        )
+    ),
+    ?assertEqual(
+        {ok, true},
+        erlang_red_jsonata:execute(
+            "$not(false)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, false},
+        erlang_red_jsonata:execute(
+            "$not(true)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, false},
+        erlang_red_jsonata:execute(
+            "$not($not(null))",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, false},
+        erlang_red_jsonata:execute(
+            "$not()",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, false},
+        erlang_red_jsonata:execute(
+            "$not([1,2,3])",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, false},
+        erlang_red_jsonata:execute(
+            "$not({ \"dd\" : \"ee\"})",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, true},
+        erlang_red_jsonata:execute(
+            "$not([])",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, true},
+        erlang_red_jsonata:execute(
+            "$not({})",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {undefined, <<"jsonata NaN is undefined">>},
+        erlang_red_jsonata:execute(
+            "$not(NaN)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {undefined, <<"jsonata undefined result: undefined">>},
+        erlang_red_jsonata:execute(
+            "$not(undefined)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, true},
+        erlang_red_jsonata:execute(
+            "$not(null)",
+            #{}
+        )
+    ).
+
 match_operator_access_data_test() ->
     ?assertEqual(
         {ok, <<"a">>},
@@ -1476,7 +1565,7 @@ privdir_test() ->
     ).
 
 exceptions_and_errors_are_captured_test() ->
-    {exception, {error, {badkey, <<"payload">>}, _Stacktrace}} =
+    {undefined, <<"jsonata undefined key: <<\"payload\">>">>} =
         erlang_red_jsonata:execute(
             "$$.payload",
             #{}

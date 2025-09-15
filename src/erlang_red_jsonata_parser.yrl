@@ -32,6 +32,7 @@ Nonterminals
   funct_call_with_array
   function_call
   function_definition
+  hash_map
   key_name
   key_value_pair
   key_value_pairs
@@ -89,9 +90,10 @@ statements -> statement : ['$1'].
 statements -> statement ';' statements : ['$1'|'$3'].
 
 %% key-value pair statements, i.e., map creation statements
-statement -> '{' key_value_pairs '}' : convert_to_map('$2').
-statement -> '{' key_value_pairs '}' comments : convert_to_map('$2').
-statement -> comments '{' key_value_pairs '}' comments : convert_to_map('$3').
+statement -> hash_map : '$1'.
+statement -> hash_map comments : '$1'.
+statement -> comments hash_map comments : '$2'.
+statement -> comments hash_map : '$2'.
 
 %% expression statements, i.e. retrieving values from msg object
 statement -> expr : convert_expr('$1').
@@ -123,6 +125,9 @@ statement -> array : '$1'.
 statement -> comments : comment.
 
 %%%%%%%%%%%%%%%% the actual definitions of stuff
+
+hash_map -> '{' '}' : convert_to_map(empty).
+hash_map -> '{' key_value_pairs '}' : convert_to_map('$2').
 
 %% support this --> $split(....)[...]
 funct_call_with_array -> function_call '[' expr ']' :
@@ -334,6 +339,8 @@ convert_expr(V) ->
 
 %%
 %%
+convert_to_map(empty) ->
+    io_lib:format("#{}", []);
 convert_to_map([{KeyName,{Value}}|T]) ->
     convert_to_map(T, io_lib:format("~s => ~s", [KeyName, Value]));
 convert_to_map([{KeyName, {string, _LineNo, Value}}|T]) ->
@@ -483,6 +490,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
                                          [args_to_string(Expr)]));
         pad ->
             list_to_binary(io_lib:format("jsonata_pad(~s)",
+                                         [args_to_string(Expr)]));
+        'not' ->
+            list_to_binary(io_lib:format("jsonata_not(~s)",
                                          [args_to_string(Expr)]));
         formatBase ->
             list_to_binary(io_lib:format("jsonata_formatbase(~s)",

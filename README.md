@@ -51,6 +51,7 @@ At the time of writing, this library supports a minimum set of functionality of 
 | $map | Supported |
 | $match | Supported |
 | $millis | Supported - including the requirement that multiple calls produce the same value |
+| $not | Supported |
 | $now | Supported - including passing value, e.g., `$now($millis())` |
 | $pad | Supported |
 | $random | Supported |
