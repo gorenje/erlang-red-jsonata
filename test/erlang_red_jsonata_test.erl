@@ -276,6 +276,16 @@ match_operator_multiple_matches_test() ->
 
 match_operator_multiple_matches_with_limit_test() ->
     ?assertEqual(
+        {ok, <<"1a2b">>},
+        erlang_red_jsonata:execute(
+            "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/,1).match",
+            #{
+                <<"payload">> => <<"1a2b3c">>
+            }
+        )
+    ),
+
+    ?assertEqual(
         {ok, #{
             <<"groups">> =>
                 [<<"123">>, <<"abc">>, <<"456">>, <<"def">>],

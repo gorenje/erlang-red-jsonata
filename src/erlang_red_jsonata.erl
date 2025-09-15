@@ -457,6 +457,10 @@ match_capture_limit(_Result, 0, [Hd | []] = _Acc) ->
     Hd;
 match_capture_limit(_Result, 0, Acc) ->
     lists:reverse(Acc);
+match_capture_limit([], MatchLimit, Acc) ->
+    match_capture_limit([], MatchLimit-1, Acc);
+match_capture_limit(HD, MatchLimit, Acc) when is_map(HD) ->
+    match_capture_limit([], MatchLimit - 1, [HD | Acc]);
 match_capture_limit([HD | Rest], MatchLimit, Acc) ->
     match_capture_limit(Rest, MatchLimit - 1, [HD | Acc]).
 
