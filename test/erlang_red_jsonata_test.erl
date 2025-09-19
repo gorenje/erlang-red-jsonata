@@ -33,6 +33,19 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+hashmap_use_binary_test() ->
+    ?assertEqual(
+        {ok, #{
+            <<"msg">> => <<" not allowed v for value but ">>,
+            <<"status">> => <<"error">>
+        }},
+        erlang_red_jsonata:execute(
+            "{ \"msg\": \" not allowed \" & $$.v & \" but \",\n"
+            "                                        \"status\" : \"error\" }",
+            #{<<"v">> => <<"v for value">>}
+        )
+    ).
+
 not_operator_test() ->
     ?assertEqual(
         undefined,
@@ -824,9 +837,9 @@ string_concat_test() ->
 %% erlfmt:ignore strings are mismanaged by erlfmt
 map_test() ->
     ?assertEqual(
-        {ok, #{<<"key">> => "hello world"}},
+        {ok, #{<<"key">> => <<"hello world this is a list">>}},
         erlang_red_jsonata:execute(
-            "{ \"key\": \"hello world\" }",
+            "{ \"key\": \"hello world this is a list\" }",
             #{}
         )
     ),
@@ -840,9 +853,9 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{key => "hello world"}},
+        {ok, #{key => <<"hello world this is an atom">>}},
         erlang_red_jsonata:execute(
-            "{ 'key': 'hello world' }",
+            "{ 'key': 'hello world this is an atom' }",
             #{}
         )
     ),
@@ -864,7 +877,7 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{<<"key">> => 4, key2 => "value two"}},
+        {ok, #{<<"key">> => 4, key2 => <<"value two">>}},
         erlang_red_jsonata:execute(
             "{ \"key\": $$.payload, 'key2': 'value two' }",
             #{<<"payload">> => 4}
@@ -872,8 +885,8 @@ map_test() ->
     ),
 
     ?assertEqual(
-        {ok, #{<<"Location">> => 4, 'CapitalKey' => "value two",
-                                   <<"CapitalKey">> => "Binary Key" }},
+        {ok, #{<<"Location">> => 4, 'CapitalKey' => <<"value two">>,
+                                   <<"CapitalKey">> => <<"Binary Key">> }},
         erlang_red_jsonata:execute(
             "{ \"Location\": $$.payload, 'CapitalKey': $$.key2,
                     \"CapitalKey\": \"Binary Key\" }",
@@ -919,7 +932,7 @@ map_with_string_concat_test() ->
     },
 
     ?assertEqual(
-        {ok, #{ <<"key">> => "4Hello 3 space 5" }},
+        {ok, #{ <<"key">> => <<"4Hello 3 space 5">> }},
         erlang_red_jsonata:execute(
             "/* commenter there */ { \"key\": $$.payload.key & \"Hello \" &
                    $$.payload.key2.key3 & \" space \" &
@@ -943,7 +956,7 @@ map_with_string_binary_concat_test() ->
     },
 
     ?assertEqual(
-        {ok, #{ <<"key">> => "4Hello 3 space 5" }},
+        {ok, #{ <<"key">> => <<"4Hello 3 space 5">> }},
         erlang_red_jsonata:execute(
             "/* commenter there */ { \"key\": $$.payload.key & \"Hello \" &
                    $$.payload.key2.key3 & \" space \" &

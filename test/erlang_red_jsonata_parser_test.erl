@@ -21,6 +21,16 @@
 foreach_parser_test_() ->
     Tests = [
       {
+       hashmap_values_should_become_binary_call,
+       "{ \"msg\": \" not allowed \" & $$.v & \" but \",
+                                        \"status\" : \"error\" }",
+       "fun (Msg) ->
+            #{ <<\"msg\">> => any_to_hashvalue(\" not allowed \" ++
+                       any_to_list(maps:get(<<\"v\">>, Msg)) ++
+                     \" but \"), <<\"status\">> => any_to_hashvalue(\"error\") }
+        end."
+      },
+      {
        attribute_access_after_function_call,
        "$match($$.payload, /([0-9]+)([a-z]+)([0-9]+)([a-z]+)/,1).match",
        "fun (Msg) ->
@@ -80,7 +90,8 @@ foreach_parser_test_() ->
        map_one_key_and_value_test,
        "{ \"key\": $$.payload.key2 }",
        "fun (Msg) -> #{
-          <<\"key\">> => maps:get(<<\"key2\">>, maps:get(<<\"payload\">>, Msg))
+             <<\"key\">> => any_to_hashvalue(maps:get(<<\"key2\">>,
+                    maps:get(<<\"payload\">>, Msg)))
         } end."
       },
       {
@@ -125,7 +136,8 @@ foreach_parser_test_() ->
        map_handle_underscore_as_key_value,
        "{ \"val\": $$._payload._key }",
        "fun (Msg) ->
-           #{ <<\"val\">> => maps:get(<<\"_key\">>, maps:get(<<\"_payload\">>, Msg)) }
+           #{ <<\"val\">> => any_to_hashvalue(maps:get(<<\"_key\">>,
+                                      maps:get(<<\"_payload\">>, Msg))) }
         end."
       },
       {
@@ -232,20 +244,25 @@ foreach_parser_test_() ->
        "{ \"key\": msg.payload.key2,
           \"key2\": $$.map.key1.val3,
           \"key3\": msg.map.key2 }",
-       "fun (Msg) -> #{
-            <<\"key\">> => maps:get(<<\"key2\">>, maps:get(<<\"payload\">>, Msg)),
-            <<\"key2\">> => maps:get(<<\"val3\">>, maps:get(<<\"key1\">>, maps:get(<<\"map\">>, Msg))),
-            <<\"key3\">> => maps:get(<<\"key2\">>, maps:get(<<\"map\">>, Msg))
-          } end."
+       "fun (Msg) ->
+              #{ <<\"key\">> => any_to_hashvalue(maps:get(<<\"key2\">>,
+                            maps:get(<<\"payload\">>, Msg))),
+                <<\"key2\">> => any_to_hashvalue(maps:get(<<\"val3\">>,
+                                maps:get(<<\"key1\">>,
+                                maps:get(<<\"map\">>, Msg)))),
+                <<\"key3\">> => any_to_hashvalue(maps:get(<<\"key2\">>,
+                                         maps:get(<<\"map\">>, Msg))) }
+        end."
       },
       {
        %% 'msg' and '$$' are interchangeable but '$$' is preferred and should
        %% be used in JSONata expressions.
        parser_map_one_key_and_value_with_msg_test,
        "{ \"key\": msg.payload.key2 }",
-       "fun (Msg) -> #{
-           <<\"key\">> => maps:get(<<\"key2\">>, maps:get(<<\"payload\">>, Msg))
-        } end."
+       "fun (Msg) ->
+             #{ <<\"key\">> => any_to_hashvalue(maps:get(<<\"key2\">>,
+                                      maps:get(<<\"payload\">>, Msg))) }
+        end."
       },
       {
        single_expr_of_various_forms,
@@ -307,7 +324,8 @@ foreach_parser_test_() ->
        "/* comment to be ignored */ { \"key\" : \"fubar \" & $$.payload }
           /* ignore this comment too */",
        "fun (Msg) ->
-          #{ <<\"key\">> => \"fubar \" ++ any_to_list(maps:get(<<\"payload\">>, Msg)) }
+            #{ <<\"key\">> => any_to_hashvalue(\"fubar \" ++
+                           any_to_list(maps:get(<<\"payload\">>, Msg))) }
         end."
       },
       {
@@ -359,8 +377,9 @@ foreach_parser_test_() ->
         "{ \"key\": 'single quote strings', banaint: 4, float: 1.23,
                                                              key2: value }",
         "fun (Msg) ->
-            #{ <<\"key\">> => \"single quote strings\", <<\"banaint\">> => 4,
-                            <<\"float\">> => 1.23, <<\"key2\">> => value }
+             #{ <<\"key\">> => any_to_hashvalue(\"single quote strings\"),
+                <<\"banaint\">> => 4, <<\"float\">> => 1.23,
+                 <<\"key2\">> => value }
         end."
       },
       {
@@ -382,9 +401,9 @@ foreach_parser_test_() ->
         arithmetic_expressions_as_key_value,
         "{ key: $millis() - $millis() }",
         "fun (Msg) ->
-          EREDMillis = erlang:system_time(millisecond),
-            #{ <<\"key\">> => jsonata_millis(EREDMillis) -
-                                                  jsonata_millis(EREDMillis) }
+            EREDMillis = erlang:system_time(millisecond),
+            #{ <<\"key\">> => any_to_hashvalue(jsonata_millis(EREDMillis) -
+                                             jsonata_millis(EREDMillis)) }
         end."
       },
       {
@@ -466,7 +485,8 @@ foreach_parser_test_() ->
         capital_letter_key_names_in_quotes,
         "{ 'Location' : 'value', \"Location\": \"VLAUE\" }",
         "fun (Msg) ->
-           #{ 'Location' => \"value\", <<\"Location\">> => \"VLAUE\" }
+              #{ 'Location' => any_to_hashvalue(\"value\"),
+                      <<\"Location\">> => any_to_hashvalue(\"VLAUE\") }
         end."
       },
       {

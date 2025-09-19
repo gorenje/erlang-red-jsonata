@@ -342,11 +342,14 @@ convert_expr(V) ->
 convert_to_map(empty) ->
     io_lib:format("#{}", []);
 convert_to_map([{KeyName,{Value}}|T]) ->
-    convert_to_map(T, io_lib:format("~s => ~s", [KeyName, Value]));
+    convert_to_map(T, io_lib:format("~s => any_to_hashvalue(~s)",
+                                    [KeyName, Value]));
 convert_to_map([{KeyName, {string, _LineNo, Value}}|T]) ->
-    convert_to_map(T, io_lib:format("~s => ~s", [KeyName, Value]));
+    convert_to_map(T, io_lib:format("~s => any_to_hashvalue(~s)",
+                                    [KeyName, Value]));
 convert_to_map([{KeyName, {name, _LineNo, Value}}|T]) ->
-    convert_to_map(T, io_lib:format("~s => ~s", [KeyName, Value]));
+    convert_to_map(T, io_lib:format("~s => any_to_hashvalue(~s)",
+                                    [KeyName, Value]));
 convert_to_map([{KeyName, {int, _LineNo, Value}}|T]) ->
     convert_to_map(T, io_lib:format("~s => ~s",
                                     [KeyName, integer_to_list(Value)]));
@@ -354,7 +357,8 @@ convert_to_map([{KeyName, {float, _LineNo, Value}}|T]) ->
     convert_to_map(T, io_lib:format("~s => ~s",
                                     [KeyName, float_to_list(Value,[short])]));
 convert_to_map([{KeyName,Value}|T]) ->
-    convert_to_map(T, io_lib:format("~s => ~s", [KeyName, Value])).
+    convert_to_map(T, io_lib:format("~s => any_to_hashvalue(~s)",
+                                    [KeyName, Value])).
 
 convert_to_map([], Values) ->
     io_lib:format("#{ ~s }", [Values]);
@@ -364,7 +368,8 @@ convert_to_map([{KeyName,{Value}}|T], PrevValues) ->
                    io_lib:format("~s, ~s => ~s", [PrevValues, KeyName, Value]));
 convert_to_map([{KeyName,{string, _LineNo, Value}}|T], PrevValues) ->
     convert_to_map(T,
-                   io_lib:format("~s, ~s => ~s", [PrevValues, KeyName, Value]));
+                   io_lib:format("~s, ~s => any_to_hashvalue(~s)",
+                                 [PrevValues, KeyName, Value]));
 convert_to_map([{KeyName,{name, _LineNo, Value}}|T], PrevValues) ->
     convert_to_map(T,
                    io_lib:format("~s, ~s => ~s", [PrevValues, KeyName, Value]));
@@ -380,7 +385,8 @@ convert_to_map([{KeyName,{float, _LineNo, Value}}|T], PrevValues) ->
                                   float_to_list(Value,[short])]));
 convert_to_map([{KeyName,Value}|T], PrevValues) ->
     convert_to_map(T,
-                   io_lib:format("~s, ~s => ~s", [PrevValues, KeyName, Value])).
+                   io_lib:format("~s, ~s => any_to_hashvalue(~s)",
+                                 [PrevValues, KeyName, Value])).
 
 %% convert_string_concat is representative of all the larger functions here:
 %%  - take the initial array of stuff

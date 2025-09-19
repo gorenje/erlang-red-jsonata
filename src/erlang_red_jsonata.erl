@@ -134,6 +134,17 @@ handle_local_function(any_to_list, [Arg]) when is_atom(Arg) ->
 handle_local_function(any_to_list, [Arg]) ->
     Arg;
 %%
+handle_local_function(any_to_hashvalue, [Arg]) when is_float(Arg) ->
+    Arg;
+handle_local_function(any_to_hashvalue, [Arg]) when is_integer(Arg) ->
+    Arg;
+handle_local_function(any_to_hashvalue, [Arg]) when is_list(Arg) ->
+    list_to_binary(Arg);
+handle_local_function(any_to_hashvalue, [Arg]) when is_atom(Arg) ->
+    Arg;
+handle_local_function(any_to_hashvalue, [Arg]) ->
+    Arg;
+%%
 handle_local_function(jsonata_to_list, Arg) ->
     handle_local_function(any_to_list, Arg);
 %%
@@ -458,7 +469,7 @@ match_capture_limit(_Result, 0, [Hd | []] = _Acc) ->
 match_capture_limit(_Result, 0, Acc) ->
     lists:reverse(Acc);
 match_capture_limit([], MatchLimit, Acc) ->
-    match_capture_limit([], MatchLimit-1, Acc);
+    match_capture_limit([], MatchLimit - 1, Acc);
 match_capture_limit(HD, MatchLimit, Acc) when is_map(HD) ->
     match_capture_limit([], MatchLimit - 1, [HD | Acc]);
 match_capture_limit([HD | Rest], MatchLimit, Acc) ->
