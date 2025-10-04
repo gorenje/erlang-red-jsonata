@@ -220,6 +220,7 @@ arith_expr -> '(' arith_expr ')' : "(" ++ convert_arith_expr('$2') ++ ")".
 dot_name -> '.' name : just_name('$2').
 dot_name -> '.' sqstring : just_name('$2').
 dot_name -> '.' string : just_name('$2').
+dot_name -> '.' funct_def : just_name('$2').
 
 dot_names -> dot_name : ['$1'].
 dot_names -> dot_name dot_names : ['$1' | '$2'].
@@ -297,6 +298,8 @@ to_map_get([{dontquote, _LineNo, V}|T], LastMap) ->
     to_map_get(T, io_lib:format("maps:get(~s, ~s)", [V, LastMap])).
 
 
+just_name({funct_def, LineNo}) ->
+    {name, LineNo, <<"function">>};
 just_name({Type, LineNo, _Name} = Whole)
   when Type =:= sqstring; Type =:= string
 ->

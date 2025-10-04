@@ -303,5 +303,6 @@
     "$match($$.payload, /./, -1)",
     "$replace($$.payload, /./, \"_\")",
     "function($v) { $v }",
-    "function($v) { $v }( 42 )"
+    "function($v) { $v }( 42 )",
+    "$$.function"
 ]

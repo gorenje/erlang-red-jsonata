@@ -544,6 +544,13 @@ foreach_parser_test_() ->
         "fun (Msg) ->
               fun(V) -> V end
         end."
+      },
+      {
+        function_is_legal_attribute_name,
+        "$$.function",
+        "fun (Msg) ->
+            maps:get(<<\"function\">>, Msg)
+        end."
       }
      ],
 
