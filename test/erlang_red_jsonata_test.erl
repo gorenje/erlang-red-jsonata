@@ -46,6 +46,93 @@ hashmap_use_binary_test() ->
         )
     ).
 
+what_is_null_test() ->
+    ?assertEqual(
+        {ok, null},
+       erlang_red_jsonata:execute(
+         "null",
+         #{}
+        )
+      ),
+    ?assertEqual(
+        {ok, false},
+       erlang_red_jsonata:execute(
+         "false",
+         #{}
+        )
+      ),
+    ?assertEqual(
+        {ok, true},
+       erlang_red_jsonata:execute(
+         "true",
+         #{}
+        )
+      ).
+
+type_operator_test() ->
+    ?assertEqual(
+        {ok, <<"function">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => fun(V) -> V end}
+        )
+      ),
+    ?assertEqual(
+        {ok, <<"number">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => 1}
+        )
+      ),
+    ?assertEqual(
+        {ok, <<"number">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => 1.1}
+        )
+      ),
+    ?assertEqual(
+        {ok, <<"string">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => <<1,2,3,4>>}
+        )
+      ),
+    ?assertEqual(
+        {ok, <<"boolean">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => true}
+        )
+      ),
+    ?assertEqual(
+        {ok, <<"boolean">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => false}
+        )
+      ),
+    ?assertEqual(
+        {ok, <<"null">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => null}
+        )
+      ),
+    ?assertEqual(
+        {ok, <<"array">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => [1,2,3,4]}
+        )
+      ),
+    ?assertEqual(
+        {ok, <<"array">>},
+       erlang_red_jsonata:execute(
+         "$type($$.payload)",
+         #{ <<"payload">> => [1,2,3,4]}
+        )
+      ).
 single_function_defintion_test() ->
     ?assertEqual(
         true,

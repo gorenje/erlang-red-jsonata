@@ -59,6 +59,7 @@ At the time of writing, this library supports a minimum set of functionality of 
 | $split | Supported |
 | $string | Supported |
 | $trim | Supported |
+| $type | Supported |
 | $substring | Supported |
 | $sum | Supported |
 | --- | --- |

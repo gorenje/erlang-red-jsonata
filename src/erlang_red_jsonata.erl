@@ -118,6 +118,23 @@ compile_to_function(JSONata) ->
 %% https://grantwinney.com/how-to-evaluate-a-string-of-code-in-erlang-at-runtime/
 %%
 %%
+handle_local_function(jsonata_type, [Arg]) when is_binary(Arg) ->
+    <<"string">>;
+handle_local_function(jsonata_type, [Arg]) when is_function(Arg) ->
+    <<"function">>;
+handle_local_function(jsonata_type, [Arg]) when is_list(Arg) ->
+    <<"array">>;
+handle_local_function(jsonata_type, [Arg]) when is_integer(Arg); is_float(Arg) ->
+    <<"number">>;
+handle_local_function(jsonata_type, [true]) ->
+    <<"boolean">>;
+handle_local_function(jsonata_type, [false]) ->
+    <<"boolean">>;
+handle_local_function(jsonata_type, [null]) ->
+    <<"null">>;
+handle_local_function(jsonata_type, _Arg) ->
+    <<"object">>;
+
 handle_local_function(jsonata_not, []) ->
     false;
 handle_local_function(jsonata_not, [Arg]) ->

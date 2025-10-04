@@ -373,6 +373,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         now ->
             list_to_binary(io_lib:format("jsonata_now(~s)",
                                          [args_to_string(Expr)]));
+        type ->
+            list_to_binary(io_lib:format("jsonata_type(~s)",
+                                         [args_to_string(Expr)]));
         privdir ->
             StringArgTuple =
                 case Expr of
@@ -624,7 +627,7 @@ yecctoken2string1(Other) ->
 
 
 
--file("/code/src/erlang_red_jsonata_parser.erl", 627).
+-file("/code/src/erlang_red_jsonata_parser.erl", 630).
 
 -dialyzer({nowarn_function, yeccpars2/7}).
 -compile({nowarn_unused_function,  yeccpars2/7}).
@@ -4584,4 +4587,4 @@ yeccpars2_154_(__Stack0) ->
   end | __Stack].
 
 
--file("/code/src/erlang_red_jsonata_parser.yrl", 672).
+-file("/code/src/erlang_red_jsonata_parser.yrl", 675).

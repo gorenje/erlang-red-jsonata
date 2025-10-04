@@ -607,6 +607,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         now ->
             list_to_binary(io_lib:format("jsonata_now(~s)",
                                          [args_to_string(Expr)]));
+        type ->
+            list_to_binary(io_lib:format("jsonata_type(~s)",
+                                         [args_to_string(Expr)]));
         privdir ->
             StringArgTuple =
                 case Expr of
