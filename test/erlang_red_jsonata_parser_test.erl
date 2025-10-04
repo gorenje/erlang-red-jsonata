@@ -537,6 +537,13 @@ foreach_parser_test_() ->
         "fun (Msg) ->
               jsonata_priv_dir(\"ddd\" ++ \"ddd\" ++ \"ddd\")
         end."
+      },
+      {
+        top_level_function_definition,
+        "function($v) { $v }",
+        "fun (Msg) ->
+              fun(V) -> V end
+        end."
       }
      ],
 

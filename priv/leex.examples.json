@@ -301,5 +301,7 @@
     "$sum($map($$.payload, function($v) { $v.col2.col3 }))",
     "$match($$.payload, /./, 1)",
     "$match($$.payload, /./, -1)",
-    "$replace($$.payload, /./, \"_\")"
+    "$replace($$.payload, /./, \"_\")",
+    "function($v) { $v }",
+    "function($v) { $v }( 42 )"
 ]

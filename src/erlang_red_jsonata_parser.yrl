@@ -87,6 +87,8 @@ Rootsymbol
 root -> statements : wrap_with_func(ignore_comments('$1')).
 
 statements -> statement : ['$1'].
+statements -> function_definition : ['$1'].
+statements -> function_definition '(' args ')' : [inline_funct_call('$1','$3')].
 statements -> statement ';' statements : ['$1'|'$3'].
 
 %% key-value pair statements, i.e., map creation statements
@@ -194,6 +196,7 @@ expr -> function_call dot_names : to_map_get('$2', '$1').
 expr -> funct_call_with_array : '$1'.
 expr -> funct_call_with_array dot_names : to_map_get('$2', '$1').
 expr -> regexp : '$1'.
+
 
 %% num are used in arithmetic expressions, these are explicitly not the
 %% same as expr because strings cannot be added together - at least in
@@ -463,8 +466,14 @@ inline_function_definition([{name, _LineNo, Var}],
 inline_function_definition([Var], {var_ref, {name, _LineNum, Var}, DotNames}) ->
     list_to_binary(io_lib:format("fun(V) -> ~s end",
                                  [to_map_get(DotNames, "V")]));
+inline_function_definition([Var], {name, _LineNum, Var}) ->
+    list_to_binary("fun(V) -> V end");
 inline_function_definition(_Args, _Expr) ->
+    %%io:format( "Function definition was: [~p] / [~p]~n", [Args, Expr]),
     unsupported_funct_def.
+
+inline_funct_call(Funct, Args) ->
+    list_to_binary(io_lib:format("( ~s )( ~s )", [Funct, args_to_string(Args)])).
 
 %%
 %% This converts the list of inbuilt functions -

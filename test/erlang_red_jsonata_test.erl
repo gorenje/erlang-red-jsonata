@@ -46,6 +46,34 @@ hashmap_use_binary_test() ->
         )
     ).
 
+single_function_defintion_test() ->
+    ?assertEqual(
+        true,
+        is_function(
+            element(
+                2,
+                erlang_red_jsonata:execute(
+                    "function($v) { $v }",
+                    #{}
+                )
+            )
+        )
+    ),
+    ?assertEqual(
+        {ok, 4},
+        erlang_red_jsonata:execute(
+            "function($v) { $v }(4)",
+            #{}
+        )
+    ),
+    ?assertEqual(
+        {ok, 5},
+        erlang_red_jsonata:execute(
+            "function($v) { $v.val }($$.payload)",
+            #{<<"payload">> => #{<<"val">> => 5}}
+        )
+    ).
+
 not_operator_test() ->
     ?assertEqual(
         undefined,
