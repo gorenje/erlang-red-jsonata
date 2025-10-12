@@ -46,6 +46,7 @@ At the time of writing, this library supports a minimum set of functionality of 
 | $count | Supported |
 | $distinct | Supported |
 | $formatBase | Supported |
+| $join | Supported |
 | $keys | Supported |
 | $length | Supported |
 | $map | Supported |

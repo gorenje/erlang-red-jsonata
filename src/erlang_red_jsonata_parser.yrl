@@ -607,6 +607,9 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         split ->
             list_to_binary(io_lib:format("jsonata_split(~s)",
                                          [args_to_string(Expr)]));
+        join ->
+            list_to_binary(io_lib:format("jsonata_join(~s)",
+                                         [args_to_string(Expr)]));
         now ->
             list_to_binary(io_lib:format("jsonata_now(~s)",
                                          [args_to_string(Expr)]));

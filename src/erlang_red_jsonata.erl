@@ -118,6 +118,16 @@ compile_to_function(JSONata) ->
 %% https://grantwinney.com/how-to-evaluate-a-string-of-code-in-erlang-at-runtime/
 %%
 %%
+handle_local_function(jsonata_join, [Arg]) when is_list(Arg) ->
+    list_to_binary(
+      string:join(
+        lists:map(fun (V) -> any_to_list(V) end,Arg), ""));
+handle_local_function(jsonata_join, [Lst, Sep]) when is_list(Lst) ->
+    list_to_binary(
+      string:join(
+        lists:map(fun (V) -> any_to_list(V) end, Lst),
+        any_to_list(Sep)));
+
 handle_local_function(jsonata_type, [Arg]) when is_binary(Arg) ->
     <<"string">>;
 handle_local_function(jsonata_type, [Arg]) when is_function(Arg) ->
