@@ -304,5 +304,6 @@
     "$replace($$.payload, /./, \"_\")",
     "function($v) { $v }",
     "function($v) { $v }( 42 )",
-    "$$.function"
+    "$$.function",
+    "$erl(\"{ stop, normal }\")"
 ]

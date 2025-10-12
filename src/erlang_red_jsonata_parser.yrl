@@ -613,6 +613,8 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         type ->
             list_to_binary(io_lib:format("jsonata_type(~s)",
                                          [args_to_string(Expr)]));
+        erl ->
+            list_to_binary(remove_quotes(Expr));
         privdir ->
             StringArgTuple =
                 case Expr of
@@ -656,6 +658,13 @@ replace_quotes({sqstring, _LineNo, [$'|Str]}) ->
         [$'|StrD] ->
             io_lib:format("'~s'", [lists:reverse(StrD)])
     end.
+
+remove_quotes([[$"|Str]]) ->
+    case lists:reverse(Str) of
+        [$"|StrD] ->
+            lists:reverse(StrD)
+    end.
+
 %%
 %%
 replace_single_quotes({sqstring, LineNo, Value}) ->

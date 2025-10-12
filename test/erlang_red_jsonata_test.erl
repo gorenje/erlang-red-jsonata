@@ -33,6 +33,30 @@ compile_to_function_with_binary_test() ->
     ?assertEqual(<<"f424f424f424f424">>, Func(#{<<"random">> => 10})),
     ?assertEqual(<<"10c810c810c810c8">>, Func(#{<<"random">> => 11})).
 
+erlang_operator_for_pure_erlang_stanzas_test() ->
+    ?assertEqual(
+        {ok, {stop,normal}},
+        erlang_red_jsonata:execute(
+          "$erl(\"{ stop, normal}\")",
+          #{}
+        )
+      ),
+    ?assertEqual(
+        {ok, [1,2,3|d]},
+        erlang_red_jsonata:execute(
+          "$erl(\"[1,2,3|d]\")",
+          #{}
+        )
+      ),
+    ?assertEqual(
+        {ok, [<<"d">>, <<"e">>]},
+        erlang_red_jsonata:execute(
+          "$keys($erl(\"#{ d => 1, e => 3 }\"))",
+          #{}
+        )
+      ).
+
+
 hashmap_use_binary_test() ->
     ?assertEqual(
         {ok, #{

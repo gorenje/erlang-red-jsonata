@@ -175,6 +175,7 @@ in    : {token, {op_in,         TokenLine}}.
 \$privdir     : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
 \$toList      : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
 \$flatten     : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
+\$erl         : {token, {funct, TokenLine, remove_dollars(TokenChars)}}.
 
 %%
 %% function to define a user defined function

@@ -378,6 +378,8 @@ convert_funct({funct,_LineNo,FunctName}, Expr) ->
         type ->
             list_to_binary(io_lib:format("jsonata_type(~s)",
                                          [args_to_string(Expr)]));
+        erl ->
+            list_to_binary(remove_quotes(Expr));
         privdir ->
             StringArgTuple =
                 case Expr of
@@ -421,6 +423,13 @@ replace_quotes({sqstring, _LineNo, [$'|Str]}) ->
         [$'|StrD] ->
             io_lib:format("'~s'", [lists:reverse(StrD)])
     end.
+
+remove_quotes([[$"|Str]]) ->
+    case lists:reverse(Str) of
+        [$"|StrD] ->
+            lists:reverse(StrD)
+    end.
+
 %%
 %%
 replace_single_quotes({sqstring, LineNo, Value}) ->
@@ -629,7 +638,7 @@ yecctoken2string1(Other) ->
 
 
 
--file("/code/src/erlang_red_jsonata_parser.erl", 632).
+-file("/code/src/erlang_red_jsonata_parser.erl", 641).
 
 -dialyzer({nowarn_function, yeccpars2/7}).
 -compile({nowarn_unused_function,  yeccpars2/7}).
@@ -4610,4 +4619,4 @@ yeccpars2_155_(__Stack0) ->
   end | __Stack].
 
 
--file("/code/src/erlang_red_jsonata_parser.yrl", 678).
+-file("/code/src/erlang_red_jsonata_parser.yrl", 687).

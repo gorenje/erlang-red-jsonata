@@ -63,6 +63,7 @@ At the time of writing, this library supports a minimum set of functionality of 
 | $substring | Supported |
 | $sum | Supported |
 | --- | --- |
+| $erl | (Erlang-RED only) Erlang operator for evaluating Erlang stanzas. Good for tuples and improper lists and atoms. |
 | $pauseMillis | (Erlang-RED only) Pause this many milli seconds |
 | $privdir | (Erlang-Red only) Retrieve the location of the /priv directory |
 | $toString | (Erlang-RED only) Convert anything and everything to a binary |

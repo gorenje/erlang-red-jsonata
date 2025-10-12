@@ -546,6 +546,13 @@ foreach_parser_test_() ->
         end."
       },
       {
+        erl_operator_random_erlang_code,
+        "$erl(\"{ stop, normal }\")",
+        "fun (Msg) ->
+              { stop, normal }
+        end."
+      },
+      {
         function_is_legal_attribute_name,
         "$$.function",
         "fun (Msg) ->
