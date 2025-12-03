@@ -14,7 +14,7 @@ What is [flow based programming](http://wiki.c2.com/?FlowBasedProgramming)? A pr
 Architecture
 ----
 
-This library transforms JSONata stanzas into valid Erlang code which are intended to be executed in the presence of a `Msg` map.
+This library ~~transforms~~ [transpiles](https://people.csail.mit.edu/rachit/post/transpiler/) JSONata stanzas into valid Erlang code which are intended to be executed in the presence of a `Msg` map.
 
 For example:
 
